@@ -1,10 +1,10 @@
 from flask import Flask
 
-from lib.service.routes import routes as r_service
 from lib.collections.routes import routes as r_collections
 from lib.members.routes import routes as r_members
+from lib.service.routes import routes as r_service
+from lib.utils.errors import activate
 from lib.utils.json_encoder import MyJSONEncoder
-from lib.collections.errors import activate
 
 app = Flask(__name__)
 app.json_encoder = MyJSONEncoder
