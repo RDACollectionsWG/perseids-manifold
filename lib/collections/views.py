@@ -1,7 +1,8 @@
-from flask import jsonify, abort, request, json
+from flask import request, json
 from flask.views import MethodView
+
+from lib.utils.errors import *
 from ..data.db import *
-from .errors import *
 
 
 class CollectionsView(MethodView):
@@ -9,7 +10,7 @@ class CollectionsView(MethodView):
         if id:
             try:
                 # todo: rewrite to retrieve collection from data backend
-                return jsonify(cites[id])
+                return jsonify(cites[id]), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -17,7 +18,7 @@ class CollectionsView(MethodView):
         else:
             try:
                 # todo: rewrite to retrieve collection from data backend
-                return jsonify(CollectionResultSet(list(cites.values())))
+                return jsonify(CollectionResultSet(list(cites.values()))), 200
             except:
                 raise ParseError()
 
@@ -25,7 +26,7 @@ class CollectionsView(MethodView):
         if not id:
             try:
                 # todo: rewrite to retrieve collection from data backend
-                return jsonify(json.loads(request.data))
+                return jsonify(json.loads(request.data)), 201
             except PermissionError:
                 raise UnauthorizedError()  # 401
             except:
@@ -37,7 +38,7 @@ class CollectionsView(MethodView):
         if id:
             try:
                 # todo: rewrite to retrieve collection from data backend
-                res = ' '+str(id)
+                return jsonify(json.loads(request.data)), 200
             except KeyError:
                 raise NotFoundError()  # 404
             except ParseError:
@@ -53,7 +54,7 @@ class CollectionsView(MethodView):
         if id:
             try:
                 # todo: rewrite to retrieve collection from data backend
-                return jsonify(cites[id])
+                return jsonify(), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -67,7 +68,7 @@ class CapabilitiesView(MethodView):
         if id:
             try:
                 # todo: rewrite to retrieve collection from data backend
-                jsonify(cites[id].capabilities)
+                return jsonify(cites[id].capabilities), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -83,7 +84,7 @@ class FindMatchView(MethodView):
                 # todo: rewrite to 1. make conversions recursive and 2. get members from collection w/ id
                 posted = json.loads(request.data)
                 stored = [k.__dict__ for k in members.values()]
-                return jsonify(MemberResultSet([m for m in stored if m == posted]))
+                return jsonify(MemberResultSet([m for m in stored if m == posted])), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -100,7 +101,7 @@ class IntersectionView(MethodView):
                 # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
                 posted = [k.__dict__ for k in members.values()]
                 stored = [k.__dict__ for k in members.values()]
-                return jsonify(MemberResultSet([m for m in stored if m == posted]))
+                return jsonify(MemberResultSet([m for m in stored if m == posted])), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -116,7 +117,7 @@ class UnionView(MethodView):
                 # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
                 posted = [k.__dict__ for k in members.values()]
                 stored = [k.__dict__ for k in members.values()]
-                return jsonify(MemberResultSet(posted+stored))
+                return jsonify(MemberResultSet(posted+stored)), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -132,7 +133,7 @@ class FlattenView(MethodView):
                 # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
                 posted = [k.__dict__ for k in members.values()]
                 stored = [k.__dict__ for k in members.values()]
-                return jsonify(MemberResultSet(posted+stored))
+                return jsonify(MemberResultSet(posted+stored)), 200
             except KeyError:
                 raise NotFoundError()
             except:
