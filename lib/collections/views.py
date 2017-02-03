@@ -9,8 +9,11 @@ class CollectionsView(MethodView):
     def get(self, id:None):
         if id:
             try:
+                model_type = request.args.get("modelType")
+                member_type = request.args.get("memberType")
+                ownership = request.args.get("ownership")
                 # todo: rewrite to retrieve collection from data backend
-                return jsonify(cites[id]), 200
+                # return jsonify(cites[id]), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -98,6 +101,7 @@ class IntersectionView(MethodView):
     def get(self, id, other_id):
         if id:
             try:
+                cursor = request.args.get("cursor")
                 # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
                 posted = [k.__dict__ for k in members.values()]
                 stored = [k.__dict__ for k in members.values()]
@@ -114,6 +118,7 @@ class UnionView(MethodView):
     def get(self, id, other_id):
         if id:
             try:
+                cursor = request.args.get("cursor")
                 # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
                 posted = [k.__dict__ for k in members.values()]
                 stored = [k.__dict__ for k in members.values()]
@@ -130,6 +135,7 @@ class FlattenView(MethodView):
     def get(self, id):
         if id:
             try:
+                cursor = request.args.get("cursor")
                 # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
                 posted = [k.__dict__ for k in members.values()]
                 stored = [k.__dict__ for k in members.values()]

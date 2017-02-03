@@ -18,6 +18,12 @@ class MembersView(MethodView):
                     raise UnauthorizedError()
             else:
                 try:
+                    datatype = request.args.get("")
+                    role = request.args.get("")
+                    index = request.args.get("")
+                    dateAdded = request.args.get("")
+                    cursor = request.args.get("")
+                    expandDepth = request.args.get("")
                     jsonify(MemberResultSet([k.__dict__ for k in members.values()])), 200
                 except UnauthorizedError:
                     raise UnauthorizedError()
