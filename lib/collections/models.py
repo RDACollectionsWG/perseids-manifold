@@ -11,11 +11,12 @@ class CollectionResultSet(Model):
 
 
 class CollectionObject(Model):
-    def __init__(self, id, capabilities, properties, description):
+    def __init__(self, id, capabilities, properties, description=None):
         self.id = id
         self.capabilities = capabilities
         self.properties = properties
-        self.description = description
+        if description:
+            self.description = description
 
 
 class CollectionCapabilities(Model):
@@ -48,5 +49,6 @@ class CollectionProperties(Model):
         self.license = license
         self.model_type = model_type
         self.has_access_restrictions = has_access_restrictions
-        self.member_of = member_of
         self.description_ontology = description_ontology
+        if member_of:
+            self.member_of = member_of

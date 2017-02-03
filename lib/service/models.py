@@ -12,7 +12,7 @@ class Operations(Enum):
 class Service(Model):
     def __init__(self,
                  provides_collection_pids=False,
-                 collection_pid_provder_type="string",
+                 collection_pid_provder_type="string",  # todo: optional
                  enforces_access=False,
                  supports_pagination=False,
                  asynchronous_actions=False,

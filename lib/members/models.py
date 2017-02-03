@@ -21,7 +21,7 @@ class MemberItem(Model):
             self.mappings = mappings
 
 class CollectionItemMappingMetadata(Model):
-    def __init__(self, role, index, dateAdded):
+    def __init__(self, role=None, index=None, dateAdded=None):
         self.role = role
         self.index = index
         self.dateAdded = dateAdded
