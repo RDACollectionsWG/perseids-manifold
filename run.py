@@ -4,10 +4,11 @@ from lib.collections.routes import routes as r_collections
 from lib.members.routes import routes as r_members
 from lib.service.routes import routes as r_service
 from lib.utils.errors import activate
-from lib.utils.json_encoder import MyJSONEncoder
+from lib.utils.json import *
 
 app = Flask(__name__)
-app.json_encoder = MyJSONEncoder
+app.json_encoder = RDAJSONEncoder
+app.json_decoder = RDAJSONDecoder
 activate(app)
 
 for (url, kwargs) in r_service + r_collections + r_members:
