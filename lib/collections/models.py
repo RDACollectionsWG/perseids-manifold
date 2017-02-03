@@ -52,3 +52,9 @@ class CollectionProperties(Model):
         self.description_ontology = description_ontology
         if member_of:
             self.member_of = member_of
+
+signatures = {
+    frozenset('id', 'capabilities', 'properties', 'description'): CollectionObject,
+    frozenset('is_ordered','appends_to_end','supports_roles','membership_is_mutable','metadata_is_mutable','restricted_to_type','max_length'): CollectionCapabilities,
+    frozenset('ownership', 'license', 'model_type', 'has_access_restrictions', 'member_of', 'description_ontology'): CollectionProperties
+}

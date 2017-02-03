@@ -31,3 +31,17 @@ class Service(Model):
         self.provides_versioning = provides_versioning
         self.supported_collections_operations = supported_collections_operations
         self.supported_model_types = supported_model_types
+
+signatures = {
+    frozenset(
+        'provides_collection_pids',
+        'collection_pid_provder_type',
+        'enforces_access, supports_pagination',
+        'asynchronous_actions',
+        'rule_based_generation',
+        'max_expansion_depth',
+        'provides_versioning',
+        'supported_collections_operations',
+        'supported_model_types'
+    ): Service
+}

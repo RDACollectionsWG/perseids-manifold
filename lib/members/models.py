@@ -25,3 +25,8 @@ class CollectionItemMappingMetadata(Model):
         self.role = role
         self.index = index
         self.dateAdded = dateAdded
+
+signatures = {
+    frozenset('id', 'location','datatype','ontology','mappings'): MemberItem,
+    frozenset('role','index','dateAdded'): CollectionItemMappingMetadata
+}
