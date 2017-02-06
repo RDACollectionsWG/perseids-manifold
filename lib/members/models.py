@@ -1,7 +1,8 @@
 from ..utils.models import Model
+from ..utils.errors import ModelError
 
 class MemberResultSet(Model):
-    def __init__(self, contents, next_cursor=None, prev_cursor=None):
+    def __init__(self, contents=None, next_cursor=None, prev_cursor=None):
         self.contents = contents
         if next_cursor:
             self.next_cursor = next_cursor
@@ -10,7 +11,7 @@ class MemberResultSet(Model):
 
 
 class MemberItem(Model):
-    def __init__(self, id, location, datatype=None, ontology=None, mappings=None):
+    def __init__(self, id=None, location=None, datatype=None, ontology=None, mappings=None):
         self.id = id
         self.location = location
         if datatype:
@@ -18,7 +19,7 @@ class MemberItem(Model):
         if ontology:
             self.ontology = ontology
         if mappings:
-            self.mappings = mappings
+            self.mappings = mappings if type(mappings) is CollectionItemMappingMetadata else CollectionItemMappingMetadata(**mappings)
 
 class CollectionItemMappingMetadata(Model):
     def __init__(self, role=None, index=None, dateAdded=None):
