@@ -1,6 +1,20 @@
 from flask import jsonify
 
 
+class ModelError(Exception):
+
+    def __init__(self, payload=None):
+        Exception.__init__(self)
+        self.message = "Invalid Input. The collection properties were malformed or invalid."
+        self.status_code = 400
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+
 class ParseError(Exception):
 
     def __init__(self, payload=None):
