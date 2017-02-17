@@ -2,11 +2,11 @@
 from enum import Enum
 from flask.json import JSONEncoder, JSONDecoder
 from .models import Model
-from ..service.models import signatures as s_service
-from ..collections.models import signatures as s_collections
-from ..members.models import signatures as s_members
+from ..service.models import classList as m_service
+from ..collections.models import classList as m_collections
+from ..members.models import classList as m_members
 
-signatures = s_service + s_collections + s_members
+models = m_service + m_collections + m_members
 
 class RDAJSONEncoder(JSONEncoder):
     def default(self, obj):
@@ -24,7 +24,9 @@ class RDAJSONDecoder(JSONDecoder):
     def custom_obj_hook(self, dct):
         res = dct
         try:
-            res = signatures[frozenset(dct.keys())](dct)
+            objects = map(lambda m: m.apply(dct), models)
+            if (objects.length==1):
+                res=objects[0]
         finally:
             # Calling custom decode function:
             if self.orig_obj_hook & res==dct:  # Do we have another hook to call?
