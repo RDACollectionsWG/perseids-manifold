@@ -13,17 +13,17 @@ class Operations(Enum):
 
 class Service(Model):
     def __init__(self,
-                 provides_collection_pids=False,
-                 collection_pid_provider_type=None,  # todo: optional
-                 enforces_access=False,
-                 supports_pagination=False,
-                 asynchronous_actions=False,
-                 rule_based_generation=False,
-                 max_expansion_depth=0,
-                 provides_versioning=False,
-                 supported_collections_operations=None,
-                 supported_model_types=None):
-        if reduce(lambda x,y: x & y is not None, [
+                 provides_collection_pids=True,
+                 collection_pid_provider_type=True,  # todo: optional
+                 enforces_access=True,
+                 supports_pagination=True,
+                 asynchronous_actions=True,
+                 rule_based_generation=True,
+                 max_expansion_depth=True,
+                 provides_versioning=True,
+                 supported_collections_operations=True,
+                 supported_model_types=True):
+        if any(map(lambda x: x is None, [
             provides_collection_pids,
             enforces_access,
             supports_pagination,
@@ -33,9 +33,8 @@ class Service(Model):
             provides_versioning,
             supported_collections_operations,
             supported_model_types
-        ]):
-            raise \
-                ModelError()
+        ])):
+            raise ModelError()
         self.provides_collection_pids = provides_collection_pids
         self.collection_pid_provider_type = collection_pid_provider_type
         self.enforces_access = enforces_access
@@ -47,16 +46,5 @@ class Service(Model):
         self.supported_collections_operations = [] if not supported_collections_operations else supported_collections_operations
         self.supported_model_types = [] if not supported_model_types else supported_model_types
 
-signatures = {
-    frozenset(
-        'provides_collection_pids',
-        'collection_pid_provider_type',
-        'enforces_access, supports_pagination',
-        'asynchronous_actions',
-        'rule_based_generation',
-        'max_expansion_depth',
-        'provides_versioning',
-        'supported_collections_operations',
-        'supported_model_types'
-    ): Service
-}
+
+classList = [Service]

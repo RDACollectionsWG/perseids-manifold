@@ -13,7 +13,7 @@ class CollectionResultSet(Model):
 
 class CollectionObject(Model):
     def __init__(self, id=None, capabilities=None, properties=None, description=None):
-        if not (id & capabilities & properties):
+        if any(map(lambda x: x is None, [id, capabilities, properties])):
             raise ModelError()
         self.id = id
         self.capabilities = capabilities
@@ -31,7 +31,7 @@ class CollectionCapabilities(Model):
                  metadata_is_mutable=None,
                  restricted_to_type=None,
                  max_length=None):
-        if not (is_ordered & appends_to_end & supports_roles & membership_is_mutable & metadata_is_mutable & restricted_to_type & max_length):
+        if any(map(lambda x: x is None, [is_ordered,  appends_to_end, supports_roles, membership_is_mutable, metadata_is_mutable, restricted_to_type, max_length])):
             raise ModelError()
         self.is_ordered = is_ordered
         self.supports_roles = supports_roles
@@ -50,7 +50,7 @@ class CollectionProperties(Model):
                  has_access_restrictions=None,
                  member_of=None,
                  description_ontology=None):
-        if not (ownership & license & model_type & has_access_restrictions & member_of & description_ontology):
+        if any(map(lambda x: x is None, [ownership, license, model_type, has_access_restrictions, member_of, description_ontology])):
             raise ModelError()
         self.ownership = ownership
         self.license = license
@@ -60,8 +60,5 @@ class CollectionProperties(Model):
         if member_of:
             self.member_of = member_of
 
-signatures = {
-    frozenset('id', 'capabilities', 'properties', 'description'): CollectionObject,
-    frozenset('is_ordered','appends_to_end','supports_roles','membership_is_mutable','metadata_is_mutable','restricted_to_type','max_length'): CollectionCapabilities,
-    frozenset('ownership', 'license', 'model_type', 'has_access_restrictions', 'member_of', 'description_ontology'): CollectionProperties
-}
+
+classList = [CollectionObject, CollectionCapabilities, CollectionProperties]
