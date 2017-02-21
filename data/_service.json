@@ -1,0 +1,12 @@
+{
+  "providesCollectionPids": true,
+  "collectionPidProviderType": true,
+  "enforcesAccess": true,
+  "supportsPagination": true,
+  "asynchronousActions": true,
+  "ruleBasedGeneration": true,
+  "maxExpansionDepth": true,
+  "providesVersioning": true,
+  "supportedCollectionsOperations": ["findMatch","flatten"],
+  "supportedModelTypes": []
+}

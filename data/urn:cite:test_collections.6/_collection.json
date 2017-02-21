@@ -1,0 +1,21 @@
+{
+  "id": "urn:cite:test_collections.6",
+  "capabilities": {
+    "isOrdered": true,
+    "appendsToEnd": false,
+    "supportsRole": false,
+    "membershipIsMutable": true,
+    "metaDataIsMutable": true,
+    "restrictedToType": "",
+    "maxLength": 5
+  },
+  "properties": {
+    "ownership": "perseids:me",
+    "license": "CCbySA",
+    "modelType": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md",
+    "hasAccessRestrictions": false,
+    "memberOf": [],
+    "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md"
+  },
+  "description": ""
+}
