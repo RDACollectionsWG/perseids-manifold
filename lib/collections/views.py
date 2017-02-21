@@ -2,7 +2,7 @@ from flask import request, json
 from flask.views import MethodView
 
 from lib.utils.errors import *
-from ..data.db import *
+from ..data.db import db
 
 
 class CollectionsView(MethodView):
@@ -12,16 +12,14 @@ class CollectionsView(MethodView):
                 model_type = request.args.get("modelType")
                 member_type = request.args.get("memberType")
                 ownership = request.args.get("ownership")
-                # todo: rewrite to retrieve collection from data backend
-                # return jsonify(cites[id]), 200
+                return jsonify(db.getCollections(id)), 200
             except KeyError:
                 raise NotFoundError()
             except:
                 raise ParseError()
         else:
             try:
-                # todo: rewrite to retrieve collection from data backend
-                return jsonify(CollectionResultSet(list(cites.values()))), 200
+                return jsonify(db.getCollections()), 200
             except:
                 raise ParseError()
 

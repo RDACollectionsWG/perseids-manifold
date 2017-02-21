@@ -2,18 +2,16 @@ from flask import jsonify, json, request
 from flask.views import MethodView
 from ..utils.errors import *
 from .models import *
-from ..data.db import *
+from ..data.db import db
 
 
 class MembersView(MethodView):
-    def get(self, id, mid:None):
+    def get(self, id, mid=None):
         try:
             if mid:
                 try:
-                    # todo: rewrite to 1. make conversions recursive and 2. get members from collection w/ id
-                    posted = json.loads(request.data)
-                    stored = [k.__dict__ for k in members.values()]
-                    return jsonify(MemberResultSet([m for m in stored if m == posted])), 200
+                    # todo: rewrite to make conversions recursive
+                    return jsonify(db.getMembers(id, mid)), 200
                 except UnauthorizedError:
                     raise UnauthorizedError()
             else:
@@ -24,7 +22,7 @@ class MembersView(MethodView):
                     dateAdded = request.args.get("")
                     cursor = request.args.get("")
                     expandDepth = request.args.get("")
-                    jsonify(MemberResultSet([k.__dict__ for k in members.values()])), 200
+                    return jsonify(db.getMembers(id)), 200
                 except UnauthorizedError:
                     raise UnauthorizedError()
                 except:
