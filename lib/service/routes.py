@@ -5,5 +5,5 @@ Sets the mapping between `url_endpoints` and `view functions`.
 """
 
 routes = [
-    ("/features", {'view_func': features, 'methods': ["GET"]})
+    ("/features/", {'view_func': features, 'methods': ["GET"]})
 ]
