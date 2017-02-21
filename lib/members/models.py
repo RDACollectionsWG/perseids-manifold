@@ -3,18 +3,18 @@ from ..utils.errors import ModelError
 
 
 class MemberResultSet(Model):
-    def __init__(self, contents=None, next_cursor=None, prev_cursor=None):
-        assert all(map(lambda r: r is not None,[contents]))
+    def __init__(self, contents=None, nextCursor=None, prevCursor=None):
+        assert all(map(lambda r: r is not None, [contents]))
         self.contents = contents
-        if next_cursor is not None:
-            self.next_cursor = next_cursor
-        if prev_cursor :
-            self.prev_cursor = prev_cursor
+        if nextCursor is not None:
+            self.nextCursor = nextCursor
+        if prevCursor :
+            self.prevCursor = prevCursor
 
 
 class MemberItem(Model):
     def __init__(self, id=None, location=None, datatype=None, ontology=None, mappings=None):
-        assert all(map(lambda r: r is not None,[id,location]))
+        assert all(map(lambda r: r is not None, [id, location]))
         self.id = id
         self.location = location
         if datatype is not None:
@@ -27,7 +27,7 @@ class MemberItem(Model):
 
 class CollectionItemMappingMetadata(Model):
     def __init__(self, role=None, index=None, dateAdded=None):
-        assert any(map(lambda r: r is not None,[role, index, dateAdded]))
+        assert any(map(lambda r: r is not None, [role, index, dateAdded]))
         self.role = role
         self.index = index
         self.dateAdded = dateAdded

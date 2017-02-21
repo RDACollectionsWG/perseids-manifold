@@ -3,12 +3,12 @@ from ..utils.errors import ModelError
 
 
 class CollectionResultSet(Model):
-    def __init__(self, contents, next_cursor=None, prev_cursor=None):
+    def __init__(self, contents, nextCursor=None, prevCursor=None):
         self.contents = contents
-        if next_cursor:
-            self.next_cursor = next_cursor
-        if prev_cursor:
-            self.prev_cursor = prev_cursor
+        if nextCursor:
+            self.nextCursor = nextCursor
+        if prevCursor:
+            self.prevCursor = prevCursor
 
 
 class CollectionObject(Model):
@@ -24,41 +24,41 @@ class CollectionObject(Model):
 
 class CollectionCapabilities(Model):
     def __init__(self,
-                 is_ordered=None,
-                 appends_to_end=None,
-                 supports_roles=None,
-                 membership_is_mutable=None,
-                 metadata_is_mutable=None,
-                 restricted_to_type=None,
-                 max_length=None):
-        if any(map(lambda x: x is None, [is_ordered,  appends_to_end, supports_roles, membership_is_mutable, metadata_is_mutable, restricted_to_type, max_length])):
+                 isOrdered=None,
+                 appendsToEnd=None,
+                 supportsRoles=None,
+                 membershipIsMutable=None,
+                 metadataIsMutable=None,
+                 restrictedToType=None,
+                 maxLength=None):
+        if any(map(lambda x: x is None, [isOrdered,  appendsToEnd, supportsRoles, membershipIsMutable, metadataIsMutable, restrictedToType, maxLength])):
             raise ModelError()
-        self.is_ordered = is_ordered
-        self.supports_roles = supports_roles
-        self.appends_to_end = appends_to_end
-        self.membership_is_mutable = membership_is_mutable
-        self.metadata_is_mutable = metadata_is_mutable
-        self.restricted_to_type = restricted_to_type
-        self.max_length = max_length
+        self.isOrdered = isOrdered
+        self.supportsRoles = supportsRoles
+        self.appendsToEnd = appendsToEnd
+        self.membershipIsMutable = membershipIsMutable
+        self.metadataIsMutable = metadataIsMutable
+        self.restrictedToType = restrictedToType
+        self.maxLength = maxLength
 
 
 class CollectionProperties(Model):
     def __init__(self,
                  ownership=None,
                  license=None,
-                 model_type=None,
-                 has_access_restrictions=None,
-                 member_of=None,
-                 description_ontology=None):
-        if any(map(lambda x: x is None, [ownership, license, model_type, has_access_restrictions, member_of, description_ontology])):
+                 modelType=None,
+                 hasAccessRestrictions=None,
+                 memberOf=None,
+                 descriptionOntology=None):
+        if any(map(lambda x: x is None, [ownership, license, modelType, hasAccessRestrictions, memberOf, descriptionOntology])):
             raise ModelError()
         self.ownership = ownership
         self.license = license
-        self.model_type = model_type
-        self.has_access_restrictions = has_access_restrictions
-        self.description_ontology = description_ontology
-        if member_of:
-            self.member_of = member_of
+        self.modelType = modelType
+        self.hasAccessRestrictions = hasAccessRestrictions
+        self.descriptionOntology = descriptionOntology
+        if memberOf:
+            self.memberOf = memberOf
 
 
 classList = [CollectionObject, CollectionCapabilities, CollectionProperties]
