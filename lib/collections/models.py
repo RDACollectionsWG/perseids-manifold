@@ -1,5 +1,6 @@
 from ..utils.models import Model
 from ..utils.errors import ModelError
+from random import randint
 
 
 class CollectionResultSet(Model):
@@ -13,9 +14,9 @@ class CollectionResultSet(Model):
 
 class CollectionObject(Model):
     def __init__(self, id=None, capabilities=None, properties=None, description=None):
-        if any(map(lambda x: x is None, [id, capabilities, properties])):
+        if any(map(lambda x: x is None, [capabilities, properties])):
             raise ModelError()
-        self.id = id
+        self.id = id or 'http://example.org/mem/'+randint(100000, 999999) # todo: make parsing safe and id minting formalized
         self.capabilities = capabilities
         self.properties = properties
         if description:
