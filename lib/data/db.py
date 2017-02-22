@@ -1,10 +1,10 @@
 from ..collections.models import *
 from ..members.models import *
 from ..service.models import *
-from json import load
-from os import listdir
+from flask.json import load, dump
+from os import listdir, remove
 from os.path import abspath, isdir, join
-
+from shutil import rmtree
 
 class DataBase:
 
@@ -16,6 +16,10 @@ class DataBase:
     def __load_json__(self, filename):
         with open(filename) as filecontent:
             return load(filecontent)
+
+    def __write_json__(self, filename, object):
+        with open(filename) as file:
+            dump(object, file)
 
     def getCollections(self, cid=None):
         if not cid:
@@ -37,5 +41,36 @@ class DataBase:
     def getService(self):
         return Service(self.__load_json__(join(self.d_data, self.d_service)))
 
+    def setCollection(self,cObject):
+        try:
+            filename = join(self.d_data, cObject.id, self.d_collection).replace('/', '∕')
+            self.__write_json__(filename, cObject)
+            return True
+        except:
+            return False
+
+    def setMember(self, cid, mObject):
+        try:
+            filename = join(self.d_data, cid, mObject+'.json').replace('/', '∕')
+            self.__write_json__(filename, mObject)
+            return True
+        except:
+            return False
+
+    def delCollection(self, cid):
+        try:
+            filename = join(self.d_data, cid).replace('/', '∕')
+            rmtree(filename)
+            return True
+        except:
+            return False
+
+    def delMember(self, cid, mObject):
+        try:
+            filename = join(self.d_data, cid, mObject.id)
+            remove(filename)
+            return True
+        except:
+            return False
 
 db = DataBase()
