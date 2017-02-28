@@ -24,11 +24,11 @@ class RDAJSONDecoder(JSONDecoder):
     def custom_obj_hook(self, dct):
         res = dct
         try:
-            objects = map(lambda m: m.apply(dct), models)
-            if (objects.length==1):
+            objects = [m.apply(dct) for m in models]
+            if (len(objects)==1):
                 res=objects[0]
         finally:
             # Calling custom decode function:
-            if self.orig_obj_hook & res==dct:  # Do we have another hook to call?
+            if self.orig_obj_hook and res==dct:  # Do we have another hook to call?
                 res = self.orig_obj_hook(dct)  # Yes: then do it
         return res  # No: just return the decoded dict
