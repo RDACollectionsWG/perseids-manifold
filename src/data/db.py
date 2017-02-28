@@ -2,6 +2,7 @@ from ..collections.models import *
 from ..members.models import *
 from ..service.models import *
 from flask.json import load, dump
+import os
 from os import listdir, remove
 from os.path import abspath, isdir, join
 from shutil import rmtree
@@ -18,7 +19,8 @@ class DataBase:
             return load(filecontent)
 
     def __write_json__(self, filename, object):
-        with open(filename) as file:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename,"w") as file:
             dump(object, file)
 
     def getCollections(self, cid=None):
