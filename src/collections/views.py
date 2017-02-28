@@ -1,7 +1,6 @@
 from flask import request, json
 from flask.views import MethodView
-
-from lib.utils.errors import *
+from ..utils.errors import *
 from ..data.db import db
 
 
