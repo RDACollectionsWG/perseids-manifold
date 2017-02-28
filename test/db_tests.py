@@ -1,45 +1,47 @@
 from src.data.db import DataBase
-from src.collections.models import *
 from unittest import TestCase, main
-from tempfile import TemporaryDirectory, mkdtemp
-import os
+from tempfile import TemporaryDirectory
+from random import randint
 from run import app
+from .mock import RandomGenerator
+import os
 
 
 class DbTests(TestCase):
 
     def setUp(self):
-        self.dir = mkdtemp(dir='./test/data')
-        self.db = DataBase(self.dir)
+        self.dir = TemporaryDirectory(dir='./test/data')
+        self.db = DataBase(self.dir.name)
         self.app = app
+        self.mock = RandomGenerator()
 
-    def test_db_create_collection(self):
+    def tearDown(self):
+        self.dir.cleanup()
+
+    def test_db_create_collection_on_filesystem(self):
         with app.app_context():
-            cCap = CollectionCapabilities(**{
-                "isOrdered": True,
-                "appendsToEnd": False,
-                "supportsRoles": False,
-                "membershipIsMutable": True,
-                "metadataIsMutable": True,
-                "restrictedToType": "",
-                "maxLength": 5
-            })
-            cProp = CollectionProperties(**{
-                "ownership": "perseids:me",
-                "license": "CCbySA",
-                "modelType": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md",
-                "hasAccessRestrictions": False,
-                "memberOf": [],
-                "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md"
-            })
-            cObj = CollectionObject(**{
-                "id": "urn:cite:test_collections.1",
-                "capabilities": cCap,
-                "properties": cProp,
-                "description": ""
-            })
-            self.db.setCollection(cObj)
-            assert(os.path.isfile(os.path.join(self.db.d_data, cObj.id, self.db.d_collection)))
+            c_obj = self.mock.collection()
+            self.db.setCollection(c_obj)
+            self.assertTrue(os.path.isfile(os.path.join(self.db.d_data, c_obj.id, self.db.d_collection)))
+
+    def test_db_access_created_collection(self):
+        with app.app_context():
+            c_obj = self.mock.collection
+            self.db.setCollection(c_obj)
+            self.assertDictEqual(c_obj.__dict__, self.db.getCollections(c_obj.id).pop().__dict__)
+
+    def test_db_access_multiple_collections(self):
+        with app.app_context():
+            c_objs = [self.mock.collection() for _ in randint(2, 5)]
+            for c in c_objs:
+                self.db.setCollection(c)
+            self.assertListEqual([c.__dict__ for c in c_objs], [c.__dict__ for c in self.db.getCollections()]) # todo: order? deep?
+
+    def test_db_delete_created_collection(self):
+        with app.app_context():
+            self.db.setCollection(self.c_obj)
+            self.db.delCollection(self.c_obj.id)
+            self.assertFalse(os.path.isfile(os.path.join(self.db.d_data, self.c_obj.id, self.db.d_collection)))
 
 if __name__ == '__main__':
     main()
