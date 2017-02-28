@@ -45,7 +45,7 @@ class DataBase:
     '''
     def setCollection(self,cObject):
         try:
-            filename = join(self.d_data, cObject.id, self.d_collection).replace('/', '∕')
+            filename = join(self.d_data, cObject.id.replace('/', '∕'), self.d_collection)
             self.__write_json__(filename, cObject)
             return cObject
         except:
@@ -53,7 +53,7 @@ class DataBase:
 
     def setMember(self, cid, mObject):
         try:
-            filename = join(self.d_data, cid, mObject+'.json').replace('/', '∕')
+            filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
             self.__write_json__(filename, mObject)
             return mObject
         except:
@@ -61,7 +61,7 @@ class DataBase:
 
     def delCollection(self, cid):
         try:
-            filename = join(self.d_data, cid).replace('/', '∕')
+            filename = join(self.d_data, cid.replace('/', '∕'))
             rmtree(filename)
             return True
         except:
@@ -69,7 +69,7 @@ class DataBase:
 
     def delMember(self, cid, mObject):
         try:
-            filename = join(self.d_data, cid, mObject.id)
+            filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕'))
             remove(filename)
             return True
         except:
