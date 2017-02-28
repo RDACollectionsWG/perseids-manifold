@@ -1,4 +1,5 @@
 from flask import jsonify, json, request
+from flask.json import loads
 from flask.views import MethodView
 from ..utils.errors import *
 from .models import *
@@ -32,8 +33,9 @@ class MembersView(MethodView):
 
     def post(self, id):
         try:
+            print(request.data)
             posted = json.loads(request.data)
-            return jsonify(posted), 201
+            return jsonify(db.setMember(id, posted)), 201
         except KeyError:
             raise NotFoundError()
         except UnauthorizedError:

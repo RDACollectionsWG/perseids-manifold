@@ -40,22 +40,24 @@ class DataBase:
 
     def getService(self):
         return Service(self.__load_json__(join(self.d_data, self.d_service)))
-
+    '''
+        @:returns CollectionObject or Error
+    '''
     def setCollection(self,cObject):
         try:
             filename = join(self.d_data, cObject.id, self.d_collection).replace('/', '∕')
             self.__write_json__(filename, cObject)
-            return True
+            return cObject
         except:
-            return False
+            raise Exception()
 
     def setMember(self, cid, mObject):
         try:
             filename = join(self.d_data, cid, mObject+'.json').replace('/', '∕')
             self.__write_json__(filename, mObject)
-            return True
+            return mObject
         except:
-            return False
+            raise Exception()
 
     def delCollection(self, cid):
         try:
@@ -63,7 +65,7 @@ class DataBase:
             rmtree(filename)
             return True
         except:
-            return False
+            raise Exception()
 
     def delMember(self, cid, mObject):
         try:
@@ -71,6 +73,6 @@ class DataBase:
             remove(filename)
             return True
         except:
-            return False
+            raise Exception()
 
 db = DataBase()
