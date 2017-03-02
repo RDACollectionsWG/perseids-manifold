@@ -3,9 +3,9 @@
   "capabilities": {
     "isOrdered": true,
     "appendsToEnd": false,
-    "supportsRole": false,
+    "supportsRoles": false,
     "membershipIsMutable": true,
-    "metaDataIsMutable": true,
+    "metadataIsMutable": true,
     "restrictedToType": "",
     "maxLength": 5
   },
