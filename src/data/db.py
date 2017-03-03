@@ -73,7 +73,7 @@ class DataBase:
 
     def delMember(self, cid, mObject):
         try:
-            filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕'))
+            filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
             remove(filename)
             return True
         except:
