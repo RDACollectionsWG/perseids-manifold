@@ -16,7 +16,7 @@ class CollectionObject(Model):
     def __init__(self, id=None, capabilities=None, properties=None, description=None):
         if any(map(lambda x: x is None, [capabilities, properties])):
             raise ModelError()
-        self.id = id or 'http://example.org/mem/'+randint(100000, 999999) # todo: make parsing safe and id minting formalized
+        self.id = id or 'http://example.org/mem/'+str(randint(100000, 999999)) # todo: make parsing safe and id minting formalized, e.g. give Service Object a function
         self.capabilities = capabilities
         self.properties = properties
         if description:
