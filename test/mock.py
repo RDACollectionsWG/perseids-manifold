@@ -74,3 +74,27 @@ class RandomGenerator:
           "description": ""
         }
         """
+
+    def json_member(self):
+        return """
+        {
+          "id": "http://example.org/mem/1",
+          "location": "http://example.org/loc/1"
+        }
+        """
+
+    def json_service(self):
+        return """
+        {
+          "providesCollectionPids": true,
+          "collectionPidProviderType": true,
+          "enforcesAccess": true,
+          "supportsPagination": true,
+          "asynchronousActions": true,
+          "ruleBasedGeneration": true,
+          "maxExpansionDepth": true,
+          "providesVersioning": true,
+          "supportedCollectionsOperations": ["findMatch","flatten"],
+          "supportedModelTypes": []
+        }
+        """
