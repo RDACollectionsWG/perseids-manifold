@@ -24,7 +24,7 @@ class RDAJSONDecoder(JSONDecoder):
     def custom_obj_hook(self, dct):
         res = dct
         try:
-            objects = [m.apply(dct) for m in models]
+            objects = [n for n in [m.apply(dct) for m in models] if n]
             if (len(objects)==1):
                 res=objects[0]
         finally:
