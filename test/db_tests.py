@@ -11,7 +11,7 @@ import os
 class DbTests(TestCase):
 
     def setUp(self):
-        self.dir = TemporaryDirectory(dir='./test/data')
+        self.dir = TemporaryDirectory(dir='test/data')
         #self.dir = mkdtemp(dir='./test/data')
         self.db = DataBase(self.dir.name)
         self.mock = RandomGenerator()
