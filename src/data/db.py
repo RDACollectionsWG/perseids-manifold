@@ -1,11 +1,9 @@
-from ..collections.models import *
-from ..members.models import *
-from ..service.models import *
 from flask.json import load, dump
 import os
 from os import listdir, remove
 from os.path import abspath, isdir, join
 from shutil import rmtree
+
 
 class DataBase:
 
@@ -29,7 +27,7 @@ class DataBase:
         else:
             if not type(cid) in (type([]), type(()), type(set())):
                 cid = [cid]
-            return [CollectionObject(**self.__load_json__(join(self.d_data, id.replace('/', '∕'), self.d_collection))) for id in cid]
+            return [self.__load_json__(join(self.d_data, id.replace('/', '∕'), self.d_collection)) for id in cid]
 
     def getMembers(self, cid, mid=None):
         assert cid
@@ -38,10 +36,14 @@ class DataBase:
         else:
             if not type(mid) in (type([]), type(()), type(set())):
                 mid = [mid]
-            return [MemberItem(**self.__load_json__(join(self.d_data, cid.replace('/', '∕'), id.replace('/', '∕')+'.json'))) for id in mid]
+            return [self.__load_json__(join(self.d_data, cid.replace('/', '∕'), id.replace('/', '∕')+'.json')) for id in mid]
 
     def getService(self):
-        return Service(self.__load_json__(join(self.d_data, self.d_service)))
+        return self.__load_json__(join(self.d_data, self.d_service))
+
+    def setService(self, sObject):
+        self.__write_json__(join(self.d_data, self.d_service), sObject)
+
     '''
         @:returns CollectionObject or Error
     '''
