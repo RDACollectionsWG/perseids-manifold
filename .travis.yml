@@ -5,15 +5,15 @@ python:
 
 install:
     - pip install -r requirements.txt
-#    - pip install coveralls
+    - pip install coveralls
 
 # command to run tests
 script:
-    - python setup.py test
+    - coverage run --source=src setup.py test
 
-#after_success:
-#    - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then coveralls; fi
-#
+after_success:
+    - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then coveralls; fi
+
 branches:
   only:
     - master
