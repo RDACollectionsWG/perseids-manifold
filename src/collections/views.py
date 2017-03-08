@@ -14,6 +14,8 @@ class CollectionsView(MethodView):
                 return jsonify(CollectionResultSet(current_app.db.getCollections(id))), 200
             except KeyError:
                 raise NotFoundError()
+            except FileNotFoundError:
+                raise NotFoundError()
             except:
                 raise ParseError()
         else:
@@ -41,12 +43,12 @@ class CollectionsView(MethodView):
                 return jsonify(json.loads(request.data)), 200
             except KeyError:
                 raise NotFoundError()  # 404
-            except ParseError:
-                raise ParseError()  # 400
             except UnauthorizedError:
                 raise UnauthorizedError()  # 401
             except ForbiddenError:
                 raise ForbiddenError()  # 403
+            except:
+                raise ParseError()  # 400
         else:
             raise NotFoundError()
 
@@ -56,6 +58,8 @@ class CollectionsView(MethodView):
                 # todo: rewrite to retrieve collection from data backend
                 return jsonify(), 200
             except KeyError:
+                raise NotFoundError()
+            except FileNotFoundError:
                 raise NotFoundError()
             except:
                 raise UnauthorizedError()
