@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, main
 
 from flask import json
 import re
@@ -133,3 +133,6 @@ class ModelTests(TestCase):
                 "supportedModelTypes": [],
                 "superfluousArg": ""
             })
+
+if __name__ == '__main__':
+    main()
