@@ -22,8 +22,9 @@ class DataBase:
             dump(object, file)
 
     def getCollections(self, cid=None):
-        if not cid:
-            return self.getCollections([d for d in listdir(self.d_data) if isdir(join(self.d_data, d))])
+        if cid is None:
+            ids = [d for d in listdir(self.d_data) if isdir(join(self.d_data, d))]
+            return self.getCollections(ids)
         else:
             if not type(cid) in (type([]), type(()), type(set())):
                 cid = [cid]
@@ -31,7 +32,7 @@ class DataBase:
 
     def getMembers(self, cid, mid=None):
         assert cid
-        if not mid:
+        if mid is None:
             return self.getMembers(cid, [m[:-5] for m in listdir(join(self.d_data, cid.replace('/', '∕'))) if (m.endswith('.json') and m != self.d_collection)])
         else:
             if not type(mid) in (type([]), type(()), type(set())):
