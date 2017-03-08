@@ -9,7 +9,7 @@ class RandomGenerator:
 
     def collection(self):
         with app.app_context():
-            id = ''.join(random.choice(string.printable) for _ in range(random.randint(10, 30)))
+            id = ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
             return CollectionObject.apply({
                 "id": id,
                 "capabilities": CollectionCapabilities.apply({
