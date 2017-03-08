@@ -1,4 +1,4 @@
-from flask import request, json, current_app
+from flask import request, json, current_app, redirect
 from flask.views import MethodView
 from src.collections.models import CollectionResultSet
 from ..utils.errors import *
@@ -148,7 +148,17 @@ class FlattenView(MethodView):
         else:
             raise NotFoundError()
 
+class RedirectView(MethodView):
+
+    def get(self, id:None):
+        return redirect(request.url[:-1], code=307)
+
+    def post(self, id:None):
+        return redirect(request.url[:-1], code=307)
+
+
 collections = {
+    'redirect': RedirectView.as_view('redirect'),
     'index': CollectionsView.as_view('collections'),
     'capabilities': CapabilitiesView.as_view('capabilities'),
     'findmatch': FindMatchView.as_view('findmatch'),
