@@ -1,7 +1,7 @@
-from flask import request, json
+from flask import request, json, current_app
 from flask.views import MethodView
+from src.collections.models import CollectionResultSet
 from ..utils.errors import *
-from ..data.db import db
 
 
 class CollectionsView(MethodView):
@@ -11,14 +11,14 @@ class CollectionsView(MethodView):
                 model_type = request.args.get("modelType")
                 member_type = request.args.get("memberType")
                 ownership = request.args.get("ownership")
-                return jsonify(db.getCollections(id)), 200
+                return jsonify(CollectionResultSet(current_app.db.getCollections(id))), 200
             except KeyError:
                 raise NotFoundError()
             except:
                 raise ParseError()
         else:
             try:
-                return jsonify(db.getCollections()), 200
+                return jsonify(CollectionResultSet(current_app.db.getCollections())), 200
             except:
                 raise ParseError()
 
