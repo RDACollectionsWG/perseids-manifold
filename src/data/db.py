@@ -1,5 +1,7 @@
 from flask.json import load, dump
 import os
+import random
+import string
 from os import listdir, remove
 from os.path import abspath, isdir, join
 from shutil import rmtree
@@ -67,5 +69,8 @@ class DataBase:
         filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
         remove(filename)
         return True
+
+    def mintID(self):
+        return ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
 
 db = DataBase()
