@@ -1,6 +1,6 @@
 from flask import request, json, current_app, redirect
 from flask.views import MethodView
-from src.collections.models import CollectionResultSet
+from src.collections.models import CollectionResultSet, CollectionObject
 from ..utils.errors import *
 
 
@@ -27,8 +27,9 @@ class CollectionsView(MethodView):
     def post(self, id:None):
         if not id:
             try:
-                # todo: rewrite to retrieve collection from data backend
-                return jsonify(json.loads(request.data)), 201
+                id = current_app.db.mintID()
+                current_app.db.setCollection(CollectionObject(id=id, **json.loads(request.data)))
+                return jsonify(current_app.db.getCollections(id)[0]), 201
             except PermissionError:
                 raise UnauthorizedError()  # 401
             except:
@@ -39,9 +40,12 @@ class CollectionsView(MethodView):
     def put(self, id:None):
         if id:
             try:
-                # todo: rewrite to retrieve collection from data backend
-                return jsonify(json.loads(request.data)), 200
-            except KeyError:
+                c_obj = json.loads(request.data)
+                if c_obj.id != id:
+                    raise ParseError()
+                current_app.db.getCollections(id)
+                return jsonify(current_app.db.setCollection(c_obj)), 200
+            except (KeyError, FileNotFoundError):
                 raise NotFoundError()  # 404
             except UnauthorizedError:
                 raise UnauthorizedError()  # 401
@@ -55,8 +59,8 @@ class CollectionsView(MethodView):
     def delete(self, id:None):
         if id:
             try:
-                # todo: rewrite to retrieve collection from data backend
-                return jsonify(), 200
+                current_app.db.delCollection(id)
+                return jsonify(''), 200
             except KeyError:
                 raise NotFoundError()
             except FileNotFoundError:
