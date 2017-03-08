@@ -49,35 +49,23 @@ class DataBase:
         @:returns CollectionObject or Error
     '''
     def setCollection(self,cObject):
-        try:
-            filename = join(self.d_data, cObject.id.replace('/', '∕'), self.d_collection)
-            self.__write_json__(filename, cObject)
-            return cObject
-        except:
-            raise Exception()
+        filename = join(self.d_data, cObject.id.replace('/', '∕'), self.d_collection)
+        self.__write_json__(filename, cObject)
+        return cObject
 
     def setMember(self, cid, mObject):
-        try:
-            filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
-            self.__write_json__(filename, mObject)
-            return mObject
-        except:
-            raise Exception()
+        filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
+        self.__write_json__(filename, mObject)
+        return mObject
 
     def delCollection(self, cid):
-        try:
-            filename = join(self.d_data, cid.replace('/', '∕'))
-            rmtree(filename)
-            return True
-        except:
-            raise Exception()
+        filename = join(self.d_data, cid.replace('/', '∕'))
+        rmtree(filename)
+        return True
 
     def delMember(self, cid, mObject):
-        try:
-            filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
-            remove(filename)
-            return True
-        except:
-            raise Exception()
+        filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
+        remove(filename)
+        return True
 
 db = DataBase()
