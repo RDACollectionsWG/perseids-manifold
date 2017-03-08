@@ -22,6 +22,10 @@ from run import app
 
 class ModelTests(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print("\n// Test Models -------------------------")
+
     def setUp(self):
         self.mock = RandomGenerator()
 

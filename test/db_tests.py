@@ -10,6 +10,10 @@ import os
 
 class DbTests(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print("\n// Test Filesystem DB ------------------")
+
     def setUp(self):
         self.dir = TemporaryDirectory(dir='test/data')
         #self.dir = mkdtemp(dir='./test/data')
