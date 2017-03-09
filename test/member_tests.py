@@ -46,7 +46,7 @@ class MembersTest(TestCase):
             for m_obj in m_objs:
                 self.app.db.setMember(c_obj.id, m_obj)
             # GET members
-            responses = [{'out': self.get(f"collections/{urllib.parse.quote_plus(c_obj.id)}/members/{urllib.parse.quote_plus(m_obj.id)}"), 'in':m_obj} for m_obj in m_objs]
+            responses = [{'out': self.get("collections/"+urllib.parse.quote_plus(c_obj.id)+"/members/"+urllib.parse.quote_plus(m_obj.id)), 'in':m_obj} for m_obj in m_objs]
             # assert 200 OK
             for r in responses:
                 self.assertEqual(r['out'].status_code, 200)
@@ -63,7 +63,7 @@ class MembersTest(TestCase):
             for m_obj in m_objs:
                 self.app.db.setMember(c_obj.id, m_obj)
             # GET members
-            response = self.get(f"collections/{urllib.parse.quote_plus(c_obj.id)}/members")
+            response = self.get("collections/"+urllib.parse.quote_plus(c_obj.id)+"/members")
             # assert 200 OK
             self.assertEqual(response.status_code, 200)
             sortedResponse = [r.__dict__ for r in sorted(json.loads(response.data)['contents'], key=lambda x: x.id)]
@@ -79,7 +79,7 @@ class MembersTest(TestCase):
             for m in m_dicts:
                 del m['id']
             self.assertListEqual(self.app.db.getMembers(c_obj.id), [])
-            responses = [self.post(f"/collections/{urllib.parse.quote_plus(c_obj.id)}/members", json.dumps(m)) for m in m_dicts]
+            responses = [self.post("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members", json.dumps(m)) for m in m_dicts]
             for r in responses:
                 self.assertEqual(r.status_code, 201)
             sortedResponse = sorted([json.loads(response.data)['contents'][0] for response in responses], key=lambda x: x.location)
@@ -96,7 +96,7 @@ class MembersTest(TestCase):
                 self.app.db.setMember(c_obj.id, m_obj)
             for m_obj in m_objs:
                 m_dict = {'id':m_obj.id, 'location': m_obj.location+"-changed"}
-                response = self.put(f"/collections/{urllib.parse.quote_plus(c_obj.id)}/members/{urllib.parse.quote_plus(m_obj.id)}", json.dumps(m_dict))
+                response = self.put("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members/"+urllib.parse.quote_plus(m_obj.id), json.dumps(m_dict))
                 result = json.loads(response.data)['contents'][0]
                 self.assertEqual(response.status_code, 200)
                 self.assertDictEqual(result.__dict__, m_dict)
@@ -111,7 +111,7 @@ class MembersTest(TestCase):
             m_objs = [self.mock.member() for i in range(5)]
             for m_obj in m_objs:
                 self.app.db.setMember(c_obj.id, m_obj)
-                response = self.delete(f"/collections/{urllib.parse.quote_plus(c_obj.id)}/members/{urllib.parse.quote_plus(m_obj.id)}")
+                response = self.delete("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members/"+urllib.parse.quote_plus(m_obj.id))
                 self.assertEqual(response.status_code, 200)
                 with self.assertRaises(FileNotFoundError):
                     self.app.db.getMembers(c_obj.id, m_obj.id)
@@ -121,5 +121,5 @@ class MembersTest(TestCase):
             c_obj = self.mock.collection()
             self.app.db.setCollection(c_obj)
             m_obj = self.mock.member()
-            response = self.delete(f"/collections/{urllib.parse.quote_plus(c_obj.id)}/members/{urllib.parse.quote_plus(m_obj.id)}")
+            response = self.delete("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members/"+urllib.parse.quote_plus(m_obj.id))
             self.assertEqual(response.status_code, 404)
