@@ -3,7 +3,7 @@ from flask.json import loads
 from flask.views import MethodView
 from ..utils.errors import *
 from .models import *
-from ..data.db import db
+from flask import current_app
 
 
 class MembersView(MethodView):
@@ -11,8 +11,7 @@ class MembersView(MethodView):
         try:
             if mid:
                 try:
-                    # todo: rewrite to make conversions recursive
-                    return jsonify(db.getMembers(id, mid)), 200
+                    return jsonify(MemberResultSet(current_app.db.getMembers(id, mid))), 200
                 except UnauthorizedError:
                     raise UnauthorizedError()
             else:
@@ -23,7 +22,7 @@ class MembersView(MethodView):
                     dateAdded = request.args.get("")
                     cursor = request.args.get("")
                     expandDepth = request.args.get("")
-                    return jsonify(db.getMembers(id)), 200
+                    return jsonify(MemberResultSet(current_app.db.getMembers(id))), 200
                 except UnauthorizedError:
                     raise UnauthorizedError()
                 except:
@@ -33,10 +32,10 @@ class MembersView(MethodView):
 
     def post(self, id):
         try:
-            print(request.data)
             posted = json.loads(request.data)
-            return jsonify(db.setMember(id, posted)), 201
-        except KeyError:
+            mid = current_app.db.mintID()
+            return jsonify(MemberResultSet([current_app.db.setMember(id, MemberItem(id=mid, **posted))])), 201
+        except (KeyError, FileNotFoundError, NotFoundError):
             raise NotFoundError()
         except UnauthorizedError:
             raise UnauthorizedError
@@ -48,8 +47,13 @@ class MembersView(MethodView):
     def put(self, id, mid):
         try:
             posted = json.loads(request.data)
-            return jsonify(posted), 200
-        except KeyError:
+            if posted.id != mid:
+                raise ParseError()
+            if len(current_app.db.getMembers(id, mid)) is not 1:
+                raise NotFoundError
+            current_app.db.setMember(id, posted)
+            return jsonify(MemberResultSet([posted])), 200
+        except (KeyError, FileNotFoundError, NotFoundError):
             raise NotFoundError()
         except UnauthorizedError:
             raise UnauthorizedError
@@ -60,8 +64,9 @@ class MembersView(MethodView):
 
     def delete(self, id, mid):
         try:
-            return 200  # todo: use id, mid
-        except KeyError:
+            current_app.db.delMember(id, mid)
+            return jsonify(), 200  # todo: use id, mid
+        except (KeyError, FileNotFoundError, NotFoundError):
             raise NotFoundError()
         except UnauthorizedError:
             raise UnauthorizedError
