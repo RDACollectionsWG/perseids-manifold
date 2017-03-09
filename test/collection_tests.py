@@ -87,7 +87,7 @@ class CollectionTest(TestCase):
                 with self.assertRaises(FileNotFoundError):
                     self.app.db.getCollections(c.id)
 
-    def test_collection_delete_id(self):
+    def test_collection_delete_unknown_id(self):
         with self.app.test_client() as c:
             response = c.delete("/collections/tgvfrde", follow_redirects=True)
         self.assertEqual(response.status_code, 404)
