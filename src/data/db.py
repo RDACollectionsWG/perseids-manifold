@@ -65,8 +65,8 @@ class DataBase:
         rmtree(filename)
         return True
 
-    def delMember(self, cid, mObject):
-        filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
+    def delMember(self, cid, mid):
+        filename = join(self.d_data, cid.replace('/', '∕'), mid.replace('/', '∕')+'.json')
         remove(filename)
         return True
 
