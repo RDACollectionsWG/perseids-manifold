@@ -1,6 +1,5 @@
 from ..utils.models import Model
 from ..utils.errors import ModelError
-from random import randint
 
 
 class MemberResultSet(Model):
@@ -16,7 +15,7 @@ class MemberResultSet(Model):
 class MemberItem(Model):
     def __init__(self, id=None, location=None, datatype=None, ontology=None, mappings=None):
         assert all(map(lambda r: r is not None, [id, location]))
-        self.id = id or 'http://example.org/mem/'+randint(100000, 999999) # todo: make parsing safe and id minting formalized
+        self.id = id
         self.location = location
         if datatype is not None:
             self.datatype = datatype
