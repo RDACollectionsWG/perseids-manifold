@@ -33,7 +33,7 @@ class RandomGenerator:
             })
 
     def member(self):
-        return MemberItem(''.join(random.choice(string.printable) for _ in range(random.randint(10, 30))),
+        return MemberItem(''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))),
                           ''.join(random.choice(string.printable) for _ in range(random.randint(10, 30))))
 
     def service(self):
