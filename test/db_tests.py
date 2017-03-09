@@ -93,7 +93,7 @@ class DbTests(TestCase):
             self.db.setCollection(c_obj)
             self.db.setMember(c_obj.id, m_obj)
             self.assertTrue(len(self.db.getMembers(c_obj.id, m_obj.id)) == 1)
-            self.db.delMember(c_obj.id, m_obj)
+            self.db.delMember(c_obj.id, m_obj.id)
             with self.assertRaises(FileNotFoundError) as context:
                 self.db.getMembers(c_obj.id, m_obj.id)
 
