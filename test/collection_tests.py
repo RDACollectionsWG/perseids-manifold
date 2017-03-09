@@ -4,6 +4,7 @@ from run import app
 from src.data.db import DataBase
 from .mock import RandomGenerator
 from flask import json
+from src.collections.models import CollectionObject
 import urllib
 
 
@@ -22,6 +23,13 @@ class CollectionTest(TestCase):
 
     def tearDown(self):
         self.dir.cleanup()
+
+    def to_dict(self, c_obj):
+        if isinstance(c_obj, CollectionObject):
+            c_dict = c_obj.__dict__
+            c_dict['capabilities'] = c_dict['capabilities'].__dict__
+            c_dict['properties'] = c_dict['properties'].__dict__
+            return c_dict
 
     def get(self, path):
         with self.app.test_client() as client:
