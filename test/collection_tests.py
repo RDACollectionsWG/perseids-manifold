@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from tempfile import TemporaryDirectory, mkdtemp
 from run import app
-from src.data.db import DataBase
+from src.data.filesystem_db import FilesystemDB
 from .mock import RandomGenerator
 from flask import json
 from src.collections.models import CollectionObject
@@ -18,7 +18,7 @@ class CollectionTest(TestCase):
         self.app = app
         self.dir = TemporaryDirectory(dir='test/data')
         # self.dir = mkdtemp(dir='test/data')
-        self.app.db = DataBase(self.dir.name)
+        self.app.db = FilesystemDB(self.dir.name)
         self.mock = RandomGenerator()
 
     def tearDown(self):
@@ -39,7 +39,7 @@ class CollectionTest(TestCase):
         with self.app.app_context():
             c_objs = [self.mock.collection() for i in range(5)]
             for c in c_objs:
-                self.app.db.setCollection(c)
+                self.app.db.set_collection(c)
             response = self.get("/collections")
             loaded = json.loads(response.data)
             self.assertEqual(response.status_code, 200)
@@ -49,7 +49,7 @@ class CollectionTest(TestCase):
         with self.app.app_context():
             c_objs = [self.mock.collection() for i in range(5)]
             for c in c_objs:
-                self.app.db.setCollection(c)
+                self.app.db.set_collection(c)
             response = [self.get("/collections/"+urllib.parse.quote_plus(c.id)) for c in c_objs]
             loaded = [json.loads(r.data) for r in response]
             for r in response:
@@ -78,14 +78,14 @@ class CollectionTest(TestCase):
         with self.app.app_context():
             c_objs = [self.mock.collection() for i in range(5)]
             for c in c_objs:
-                self.app.db.setCollection(c)
+                self.app.db.set_collection(c)
             with self.app.test_client() as c:
                 results = [c.delete("/collections/"+urllib.parse.quote_plus(col.id), follow_redirects=True) for col in c_objs]
             for r in results:
                 self.assertEqual(r.status_code, 200)
             for c in c_objs:
                 with self.assertRaises(FileNotFoundError):
-                    self.app.db.getCollections(c.id)
+                    self.app.db.get_collection(c.id)
 
     def test_collection_delete_unknown_id(self):
         with self.app.test_client() as c:
@@ -96,7 +96,7 @@ class CollectionTest(TestCase):
         with self.app.app_context():
             c_objs = [self.mock.collection() for i in range(5)]
             for c in c_objs:
-                self.app.db.setCollection(c)
+                self.app.db.set_collection(c)
                 c.description = c.description+"changed"
             with self.app.test_client() as c:
                 for col in c_objs:
