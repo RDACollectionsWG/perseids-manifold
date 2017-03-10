@@ -11,7 +11,7 @@ class CollectionsView(MethodView):
                 model_type = request.args.get("modelType")
                 member_type = request.args.get("memberType")
                 ownership = request.args.get("ownership")
-                return jsonify(CollectionResultSet(current_app.db.getCollections(id))), 200
+                return jsonify(CollectionResultSet(current_app.db.get_collection(id))), 200
             except KeyError:
                 raise NotFoundError()
             except FileNotFoundError:
@@ -20,16 +20,16 @@ class CollectionsView(MethodView):
                 raise ParseError()
         else:
             try:
-                return jsonify(CollectionResultSet(current_app.db.getCollections())), 200
+                return jsonify(CollectionResultSet(current_app.db.get_collection())), 200
             except:
                 raise ParseError()
 
     def post(self, id:None):
         if not id:
             try:
-                id = current_app.db.mintID()
-                current_app.db.setCollection(CollectionObject(id=id, **json.loads(request.data)))
-                return jsonify(current_app.db.getCollections(id)[0]), 201
+                id = current_app.db.get_id(CollectionObject)
+                current_app.db.set_collection(CollectionObject(id=id, **json.loads(request.data)))
+                return jsonify(current_app.db.get_collection(id)[0]), 201
             except PermissionError:
                 raise UnauthorizedError()  # 401
             except:
@@ -43,8 +43,8 @@ class CollectionsView(MethodView):
                 c_obj = json.loads(request.data)
                 if c_obj.id != id:
                     raise ParseError()
-                current_app.db.getCollections(id)
-                return jsonify(current_app.db.setCollection(c_obj)), 200
+                current_app.db.get_collection(id)
+                return jsonify(current_app.db.set_collection(c_obj)), 200
             except (KeyError, FileNotFoundError):
                 raise NotFoundError()  # 404
             except UnauthorizedError:
@@ -59,7 +59,7 @@ class CollectionsView(MethodView):
     def delete(self, id:None):
         if id:
             try:
-                current_app.db.delCollection(id)
+                current_app.db.del_collection(id)
                 return jsonify(''), 200
             except KeyError:
                 raise NotFoundError()

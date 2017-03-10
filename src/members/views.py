@@ -6,12 +6,12 @@ from .models import *
 from flask import current_app
 
 
-class MembersView(MethodView):
+class MemberView(MethodView):
     def get(self, id, mid=None):
         try:
             if mid:
                 try:
-                    return jsonify(MemberResultSet(current_app.db.getMembers(id, mid))), 200
+                    return jsonify(MemberResultSet(current_app.db.get_member(id, mid))), 200
                 except UnauthorizedError:
                     raise UnauthorizedError()
             else:
@@ -22,7 +22,7 @@ class MembersView(MethodView):
                     dateAdded = request.args.get("")
                     cursor = request.args.get("")
                     expandDepth = request.args.get("")
-                    return jsonify(MemberResultSet(current_app.db.getMembers(id))), 200
+                    return jsonify(MemberResultSet(current_app.db.get_member(id))), 200
                 except UnauthorizedError:
                     raise UnauthorizedError()
                 except:
@@ -33,8 +33,8 @@ class MembersView(MethodView):
     def post(self, id):
         try:
             posted = json.loads(request.data)
-            mid = current_app.db.mintID()
-            return jsonify(MemberResultSet([current_app.db.setMember(id, MemberItem(id=mid, **posted))])), 201
+            mid = current_app.db.get_id(MemberItem)
+            return jsonify(MemberResultSet([current_app.db.set_member(id, MemberItem(id=mid, **posted))])), 201
         except (KeyError, FileNotFoundError, NotFoundError):
             raise NotFoundError()
         except UnauthorizedError:
@@ -49,9 +49,9 @@ class MembersView(MethodView):
             posted = json.loads(request.data)
             if posted.id != mid:
                 raise ParseError()
-            if len(current_app.db.getMembers(id, mid)) is not 1:
+            if len(current_app.db.get_member(id, mid)) is not 1:
                 raise NotFoundError
-            current_app.db.setMember(id, posted)
+            current_app.db.set_member(id, posted)
             return jsonify(MemberResultSet([posted])), 200
         except (KeyError, FileNotFoundError, NotFoundError):
             raise NotFoundError()
@@ -64,7 +64,7 @@ class MembersView(MethodView):
 
     def delete(self, id, mid):
         try:
-            current_app.db.delMember(id, mid)
+            current_app.db.del_member(id, mid)
             return jsonify(), 200  # todo: use id, mid
         except (KeyError, FileNotFoundError, NotFoundError):
             raise NotFoundError()
@@ -107,6 +107,6 @@ class PropertiesView(MethodView):
 
 
 members = {
-    'members': MembersView.as_view('members'),
+    'members': MemberView.as_view('members'),
     'properties': PropertiesView.as_view('properties'),
 }
