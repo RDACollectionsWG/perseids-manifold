@@ -13,3 +13,6 @@ activate(app)
 
 for (url, kwargs) in r_service + r_collections + r_members:
     app.add_url_rule(url, **kwargs)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
