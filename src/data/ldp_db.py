@@ -1,5 +1,9 @@
 import base64
+from rdflib import Graph, Namespace
 from .db import DBInterface
+from src.collections.models import CollectionResultSet
+
+ldp = Namespace("http://www.w3.org/ns/ldp#")
 
 class LDPDataBase(DBInterface):
 
@@ -7,7 +11,11 @@ class LDPDataBase(DBInterface):
         self.root = root if root.endswith("/") else root+"/"
 
     def get_collection(self, id:None):
-        assert False
+        if id is not None:
+            contents = [self.graph_to_collection(Graph().parse(self.root+self.b64encode(id)))]
+        else:
+            contents = [self.graph_to_collection(Graph().parse(str(collection))) for collection in Graph().parse(self.root).objects(None, ldp.contains)]
+        return CollectionResultSet(contents)
 
     def set_collection(self, c_obj):
         assert False
