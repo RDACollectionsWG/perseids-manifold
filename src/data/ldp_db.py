@@ -1,3 +1,4 @@
+import base64
 from .db import DBInterface
 
 class LDPDataBase(DBInterface):
@@ -31,3 +32,9 @@ class LDPDataBase(DBInterface):
     
     def get_id(self, type):
         assert False
+
+    def b64encode(self, s):
+        return base64.b64encode(str.encode(s)).decode()
+
+    def b64decode(self, s):
+        return base64.b64decode(s).decode()
