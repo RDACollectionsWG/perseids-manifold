@@ -3,7 +3,7 @@ from .db import DBInterface
 class LDPDataBase(DBInterface):
 
     def __init__(self, root):
-        assert False
+        self.root = root if root.endswith("/") else root+"/"
 
     def get_collection(self, id:None):
         assert False
