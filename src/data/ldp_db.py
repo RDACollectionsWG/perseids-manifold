@@ -1,9 +1,11 @@
 import base64
-from rdflib import Graph, Namespace
+from rdflib import Graph, Namespace, URIRef, Literal
+from rdflib.namespace import RDF, DCTERMS
 from .db import DBInterface
-from src.collections.models import CollectionResultSet
+from src.collections.models import *
+from src.members.models import *
 
-ldp = Namespace("http://www.w3.org/ns/ldp#")
+LDP = Namespace("http://www.w3.org/ns/ldp#")
 
 class LDPDataBase(DBInterface):
 
@@ -14,7 +16,7 @@ class LDPDataBase(DBInterface):
         if id is not None:
             contents = [self.graph_to_collection(Graph().parse(self.root+self.b64encode(id)))]
         else:
-            contents = [self.graph_to_collection(Graph().parse(str(collection))) for collection in Graph().parse(self.root).objects(None, ldp.contains)]
+            contents = [self.graph_to_collection(Graph().parse(str(collection))) for collection in Graph().parse(self.root).objects(None, LDP.contains)]
         return CollectionResultSet(contents)
 
     def set_collection(self, c_obj):
@@ -46,3 +48,18 @@ class LDPDataBase(DBInterface):
 
     def b64decode(self, s):
         return base64.b64decode(s).decode()
+
+    def graph_to_collection(self, g):
+        containers = [self.graph_to_dict(g, sbj, properties['CollectionObject']) for sbj in g.subjects(RDF.type, LDP.Container)]
+        for c in containers:
+            c['capabilities'] = self.graph_to_dict(g, c['capabilities'], properties['CollectionCapabilities'])
+            c['properties'] = self.graph_to_dict(g, c['properties'], properties['CollectionProperties'])
+        return [CollectionObject(**c) for c in containers]
+
+    def collection_to_graph(self,c_obj):
+        node = URIRef(self.root+self.b64encode(c_obj.id))
+        capabilities = URIRef(str(node)+'#capabilities')
+        properties = URIRef(str(node)+'#properties')
+        g = Graph()
+        g.add((node, DCTERMS.identifier, Literal(c_obj.id)))
+        assert False
