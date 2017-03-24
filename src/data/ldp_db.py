@@ -89,3 +89,6 @@ class LDPDataBase(DBInterface):
         g = Graph()
         g.add((node, DCTERMS.identifier, Literal(c_obj.id)))
         assert False
+
+    def graph_to_dict(self, graph, node, propertiesMap):
+        return {propertiesMap[str(prd)][0]: propertiesMap[str(prd)][1](obj) for (prd, obj) in graph.predicate_objects(node) if str(prd) in propertiesMap}
