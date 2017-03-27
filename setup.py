@@ -13,7 +13,8 @@ setup(
         "Flask>=0.12",
         "Werkzeug>=0.11.3",
         "Flask-Caching>=1.2.0",
-        "flask-cors==2.0.0"
+        "flask-cors==2.0.0",
+        "RDFLib>=4.2.2"
     ],
     include_package_data=True,
     test_suite="test",
