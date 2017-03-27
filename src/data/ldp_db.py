@@ -47,6 +47,11 @@ class LDPDataBase(DBInterface):
         return CollectionResultSet(contents)
 
     def set_collection(self, c_obj):
+        self.collection_to_graph(c_obj)
+        # todo: serialize to turtle
+        # todo: response1 = POST to self.root
+        # todo: response2 = POST basiccontainer to self.root+c_obj.id+/members
+        # todo: return c_obj
         assert False
 
     def del_collection(self, id):
