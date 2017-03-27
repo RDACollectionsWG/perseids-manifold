@@ -1,4 +1,5 @@
 import base64
+import requests
 from rdflib import Graph, Namespace, URIRef, Literal
 from rdflib.namespace import RDF, DCTERMS
 from .db import DBInterface
@@ -49,6 +50,8 @@ class LDPDataBase(DBInterface):
         assert False
 
     def del_collection(self, id):
+        requests.delete(self.root+id)
+        # todo: wrap into flask response
         assert False
 
     def get_member(self, cid, mid:None):
