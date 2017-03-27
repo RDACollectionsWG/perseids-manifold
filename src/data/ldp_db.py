@@ -60,12 +60,19 @@ class LDPDataBase(DBInterface):
         assert False
 
     def get_member(self, cid, mid:None):
+        # todo: write graph_to_member
+        # todo: set up properties for MemberItem
+        # todo: return MemberResultSet
         assert False
 
     def set_member(self, cid, m_obj):
+        # todo: write member_to_graph
+        # todo: serialize to turtle
+        # todo: send to self.root+b64encode(cid)+members
         assert False
 
     def del_member(self, cid, mid):
+        # todo: requests.delete(self.root+id)
         assert False
 
     def get_service(self):
