@@ -107,3 +107,13 @@ class LDPDataBase(DBInterface):
 
     def graph_to_dict(self, graph, node, propertiesMap):
         return {propertiesMap[str(prd)][0]: propertiesMap[str(prd)][1](obj) for (prd, obj) in graph.predicate_objects(node) if str(prd) in propertiesMap}
+
+    def graph_to_member(self,g):
+        return MemberItem()
+        assert False
+
+    def member_to_graph(self, m_obj):
+        m_graph = Graph()
+        m_graph.add((URIRef(""), DCTERMS.identifier, URIRef(m_obj.id)))
+        m_graph.add((URIRef(""), RDA.location, URIRef(m_obj.location)))
+        return m_graph
