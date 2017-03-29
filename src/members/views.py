@@ -7,28 +7,54 @@ from flask import current_app
 
 
 class MemberView(MethodView):
+
+    def flatten(self, ls):
+        return [m for l in ls for m in l]
+
+    def recurse(self, m_obj, depth):
+        if depth is 0:
+            return [m_obj]
+        else:
+            try:
+                m_objs = current_app.db.get_member(m_obj.id)
+                return self.flatten([self.recurse(m, depth-1) for m in m_objs])
+            except:
+                return [m_obj]
+
+
     def get(self, id, mid=None):
         try:
             if mid:
                 try:
-                    return jsonify(MemberResultSet(current_app.db.get_member(id, mid))), 200
+                    members = current_app.db.get_member(id, mid)
                 except UnauthorizedError:
                     raise UnauthorizedError()
             else:
                 try:
-                    datatype = request.args.get("")
-                    role = request.args.get("")
-                    index = request.args.get("")
-                    dateAdded = request.args.get("")
-                    cursor = request.args.get("")
-                    expandDepth = request.args.get("")
-                    return jsonify(MemberResultSet(current_app.db.get_member(id))), 200
+                    datatype = request.args.get("f_datetype")
+                    role = request.args.get("f_role")
+                    index = request.args.get("f_index")
+                    date_added = request.args.get("f_dateAdded")
+                    cursor = request.args.get("cursor")
+                    expand_depth = int(request.args.get("expandDepth"))
+                    members = current_app.db.get_member(id)
+                    if expand_depth is not 0:
+                        members = self.flatten([self.recurse(m, expand_depth) for m in members])
+                    if datatype:
+                        members = [m for m in members if m.datatype == datatype]
+                    if role:
+                        members = [m for m in members if hasattr(m,'mappings') and m.mappings.role == role]
+                    if index:
+                        members = [m for m in members if hasattr(m,'mappings') and m.mappings.index == index]
+                    if date_added:
+                        members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
                 except UnauthorizedError:
                     raise UnauthorizedError()
                 except:
                     raise ParseError()
         except KeyError:
             raise NotFoundError()
+        return jsonify(MemberResultSet(members)), 200
 
     def post(self, id):
         try:
