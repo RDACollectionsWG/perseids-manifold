@@ -8,10 +8,7 @@ class CollectionsView(MethodView):
     def get(self, id:None):
         if id:
             try:
-                model_type = request.args.get("modelType")
-                member_type = request.args.get("memberType")
-                ownership = request.args.get("ownership")
-                return jsonify(CollectionResultSet(current_app.db.get_collection(id))), 200
+                collections = current_app.db.get_collection(id)
             except KeyError:
                 raise NotFoundError()
             except FileNotFoundError:
@@ -20,9 +17,19 @@ class CollectionsView(MethodView):
                 raise ParseError()
         else:
             try:
-                return jsonify(CollectionResultSet(current_app.db.get_collection())), 200
+                model_type = request.args.get("f_modelType")
+                member_type = request.args.get("f_memberType")
+                ownership = request.args.get("f_ownership")
+                collections = current_app.db.get_collection()
+                if model_type:
+                    collections = [c for c in collections if c.properties.modelType == model_type]
+                if member_type:
+                    collections = [c for c in collections if c.capabilities.restrictedToType == member_type]
+                if ownership:
+                    collections = [c for c in collections if c.properties.ownership == ownership]
             except:
                 raise ParseError()
+        return jsonify(CollectionResultSet(collections)), 200
 
     def post(self, id:None):
         if not id:
@@ -75,8 +82,7 @@ class CapabilitiesView(MethodView):
     def get(self, id):
         if id:
             try:
-                # todo: rewrite to retrieve collection from data backend
-                return jsonify(cites[id].capabilities), 200
+                return jsonify(current_app.db.get_collection(id)[0].capabilities), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -99,7 +105,6 @@ class FindMatchView(MethodView):
                 raise UnauthorizedError()
         else:
             raise NotFoundError()
-
 
 
 class IntersectionView(MethodView):
@@ -151,6 +156,7 @@ class FlattenView(MethodView):
                 raise UnauthorizedError()
         else:
             raise NotFoundError()
+
 
 class RedirectView(MethodView):
 
