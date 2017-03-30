@@ -1,4 +1,7 @@
 {
   "id": "urn:cite:test_collections.2",
-  "location": "http://example.org/loc/5"
+  "location": "http://example.org/loc/5",
+  "mappings": {
+    "index": 0
+  }
 }
