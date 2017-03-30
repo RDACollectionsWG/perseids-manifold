@@ -143,13 +143,15 @@ class IntersectionView(MethodView):
 
 class UnionView(MethodView):
     def get(self, id, other_id):
-        if id:
+        if id and other_id:
             try:
-                cursor = request.args.get("cursor")
-                # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
-                posted = [k.__dict__ for k in members.values()]
-                stored = [k.__dict__ for k in members.values()]
-                return jsonify(MemberResultSet(posted+stored)), 200
+                if (id == other_id):
+                    union =  current_app.db.get_member(id)
+                else:
+                    set1 = [m.dict() for m in current_app.db.get_member(id)]
+                    set2 = [m.dict() for m in current_app.db.get_member(other_id)]
+                    union = set1 + [m for m in set2 if m not in set1]
+                return jsonify(MemberResultSet([MemberItem(**m) for m in union])), 200
             except KeyError:
                 raise NotFoundError()
             except:
