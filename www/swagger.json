@@ -5,7 +5,7 @@
         "description": "API Strawman for RDA Research Data Collections WG",
         "version": "1.0.0"
     },
-    "host": "localhost:5000",
+    "host": "collections.perseids.org",
     "schemes": [
         "http"
     ],
