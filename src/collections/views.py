@@ -161,14 +161,25 @@ class UnionView(MethodView):
 
 
 class FlattenView(MethodView):
+
+    def flatten(self, ls):
+        return [m for l in ls for m in l]
+
+    def recurse(self, m_obj, depth):
+        if depth is 0:
+            return [m_obj]
+        else:
+            try:
+                m_objs = current_app.db.get_member(m_obj.id)
+                return self.flatten([self.recurse(m, depth-1) for m in m_objs])
+            except:
+                return [m_obj]
+
     def get(self, id):
         if id:
             try:
-                cursor = request.args.get("cursor")
-                # todo: 1. make conversions recursive, 2. get members from collection w/ id and 3. compare lists
-                posted = [k.__dict__ for k in members.values()]
-                stored = [k.__dict__ for k in members.values()]
-                return jsonify(MemberResultSet(posted+stored)), 200
+                members = self.flatten([self.recurse(m, -1) for m in current_app.db.get_member(id)])
+                return jsonify(MemberResultSet(members)), 200
             except KeyError:
                 raise NotFoundError()
             except:
