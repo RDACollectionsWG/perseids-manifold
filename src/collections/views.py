@@ -1,8 +1,20 @@
 from flask import request, json, current_app, redirect
 from flask.views import MethodView
 from src.collections.models import CollectionResultSet, CollectionObject
-from ..utils.errors import *
+from src.members.models import MemberResultSet, MemberItem
+from src.utils.errors import *
+from src.utils.models import Model
 
+def dict_subset(dict1, dict2):
+    for key, value in dict1.items():
+        if dict2.get(key) is None:
+            return False
+        elif isinstance(value, dict):
+            if not dict_subset(dict1.get(key), dict2.get(key)):
+                return False
+        elif dict2.get(key) != value:
+            return False
+    return True
 
 class CollectionsView(MethodView):
     def get(self, id:None):
@@ -95,10 +107,13 @@ class FindMatchView(MethodView):
     def post(self, id):
         if id:
             try:
-                # todo: rewrite to 1. make conversions recursive and 2. get members from collection w/ id
                 posted = json.loads(request.data)
-                stored = [k.__dict__ for k in members.values()]
-                return jsonify(MemberResultSet([m for m in stored if m == posted])), 200
+                if isinstance(posted, Model):
+                    posted = posted.dict()
+                if isinstance(posted.get('mappings'), Model):
+                    posted['mappings'] = posted.get('mappings').dict()
+                members = [m for m in current_app.db.get_member(id) if dict_subset(posted, m.dict())]
+                return jsonify(MemberResultSet(members)), 200
             except KeyError:
                 raise NotFoundError()
             except:
