@@ -36,7 +36,7 @@ class MemberView(MethodView):
                     index = request.args.get("f_index")
                     date_added = request.args.get("f_dateAdded")
                     cursor = request.args.get("cursor")
-                    expand_depth = int(request.args.get("expandDepth"))
+                    expand_depth = int(request.args.get("expandDepth") or 0)
                     members = current_app.db.get_member(id)
                     if expand_depth is not 0:
                         members = self.flatten([self.recurse(m, expand_depth) for m in members])
