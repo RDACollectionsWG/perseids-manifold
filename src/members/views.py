@@ -21,7 +21,6 @@ class MemberView(MethodView):
             except:
                 return [m_obj]
 
-
     def get(self, id, mid=None):
         try:
             if mid:
@@ -103,9 +102,21 @@ class MemberView(MethodView):
 
 
 class PropertiesView(MethodView):
+
+    def write(self, cur, keys, value, create=False):
+        if len(keys) == 1:
+            cur[keys[0]] = value
+            return
+        if create and not cur.has_key(keys[0]):
+            cur[keys[0]] = {}
+        self.write(cur[keys[0]], keys[1:], value)
+
     def get(self, id, mid, property):
         try:
-            return jsonify(), 200  # todo: use id, mid, property
+            result = current_app.db.get_member(id,mid).dict()
+            for key in property.split('.'):
+                result = result[key]
+            return jsonify(result), 200
         except KeyError:
             raise NotFoundError()
         except UnauthorizedError:
@@ -113,7 +124,12 @@ class PropertiesView(MethodView):
 
     def put(self, id, mid, property):
         try:
-            return jsonify(id), 200  # todo: use id, mid, property
+            posted = json.loads(request.data)['content']
+            m_dict = current_app.db.get_member(id,mid).dict()
+            self.write(m_dict, property.split("."), posted)
+            if m_dict.get('mappings') and not isinstance(m_dict['mappings'], Model):
+                m_dict['mappings'] = CollectionItemMappingMetadata(**m_dict['mappings'])
+            return jsonify(current_app.db.set_member(MemberItem(**m_dict))), 200
         except KeyError:
             raise NotFoundError()
         except UnauthorizedError:
