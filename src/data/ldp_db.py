@@ -99,13 +99,18 @@ class LDPDataBase(DBInterface):
             c['properties'] = self.graph_to_dict(g, c['properties'], properties['CollectionProperties'])
         return [CollectionObject(**c) for c in containers]
 
+    '''
+        Convert a collection object into a set of triples,
+        using Base64 encoding for URL conformant IDs and
+        #capabilities and #properties fragments
+    '''
     def collection_to_graph(self,c_obj):
         node = URIRef(self.root+self.b64encode(c_obj.id))
         capabilities = URIRef(str(node)+'#capabilities')
         properties = URIRef(str(node)+'#properties')
-        g = Graph()
-        g.add((node, DCTERMS.identifier, Literal(c_obj.id)))
-        assert False
+        return self.dict_to_graph(node, c_obj.dict(), inverted_properties['CollectionObject']) +\
+               self.dict_to_graph(capabilities, c_obj.capabilities.dict(), inverted_properties['CollectionCapabilities']) +\
+               self.dict_to_graph(properties, c_obj.properties.dict(), inverted_properties['CollectionProperties'])
 
     def graph_to_dict(self, graph, node, propertiesMap):
         return {propertiesMap[str(prd)][0]: propertiesMap[str(prd)][1](obj) for (prd, obj) in graph.predicate_objects(node) if str(prd) in propertiesMap}
