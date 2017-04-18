@@ -34,6 +34,8 @@ properties = {
     }
 }
 
+inverted_properties = { key:{v[0]: [k,v[1],v[2]] for k,v in value.items() if not k.startswith("__")} for key,value in properties.items() if not key.startswith("__")}
+
 class LDPDataBase(DBInterface):
 
     def __init__(self, root):
