@@ -29,7 +29,7 @@ properties = {
         str(RDA.modelType): ['modelType', str, URIRef],
         str(RDA.descriptionOntology): ['descriptionOntology', str, URIRef],
         str(DCTERMS.license): ['license', str, URIRef],
-        str(DCTERMS.rightsHolder): ['owner', str, Literal],
+        str(DCTERMS.rightsHolder): ['ownership', str, Literal],
         str(RDA.hasAccessRestrictions): ['hasAccessRestrictions', bool, Literal]
     }
 }
