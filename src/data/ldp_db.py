@@ -110,6 +110,14 @@ class LDPDataBase(DBInterface):
     def graph_to_dict(self, graph, node, propertiesMap):
         return {propertiesMap[str(prd)][0]: propertiesMap[str(prd)][1](obj) for (prd, obj) in graph.predicate_objects(node) if str(prd) in propertiesMap}
 
+    def dict_to_graph(self, subject, dict, propertiesMap):
+        g = Graph()
+        for k,v in dict.items():
+            if not k.startswith("__"):
+                print(subject, propertiesMap[k][0], propertiesMap[k][2](v))
+                g.add((subject, URIRef(propertiesMap[k][0]), propertiesMap[k][2](v)))
+        return g
+
     def graph_to_member(self,g):
         return MemberItem()
         assert False
