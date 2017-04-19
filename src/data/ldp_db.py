@@ -48,13 +48,25 @@ class LDPDataBase(DBInterface):
             contents = [self.graph_to_collection(Graph().parse(str(collection))) for collection in Graph().parse(self.root).objects(None, LDP.contains)]
         return CollectionResultSet(contents)
 
+    '''
+        This is almost ready.
+    '''
     def set_collection(self, c_obj):
-        self.collection_to_graph(c_obj)
-        # todo: serialize to turtle
+        collection = self.collection_to_graph(c_obj)
+        # todo: add rdf:types (BasicContainer, RDACollection)
+        collection.add((URIRef(''), RDF.type, LDP.BasicContainer))
         # todo: response1 = POST to self.root
-        # todo: response2 = POST basiccontainer to self.root+c_obj.id+/members
+        response = requests.post(self.root, data=collection.serialize(format="turtle"), headers={'Content-Type':'text/turtle','Link':'<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"','Slug':self.b64encode(c_obj.id)})
+        if response.status_code is 201:
+            # todo: response2 = POST basiccontainer to self.root+c_obj.id+/members
+            member = Graph()
+            member.add((URIRef(''), RDF.type, LDP.BasicContainer))
+            loc = response.headers.get('Location')
+            requests.post(loc, data=member.serialize(format="turtle"), headers={'Content-Type':'text/turtle','Link':'<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"','Slug':'member'})
+        else:
+            raise KeyError
         # todo: return c_obj
-        assert False
+        return c_obj
 
     def del_collection(self, id):
         requests.delete(self.root+id)
