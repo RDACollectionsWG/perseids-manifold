@@ -131,7 +131,6 @@ class LDPDataBase(DBInterface):
         g = Graph()
         for k,v in dict.items():
             if not k.startswith("__"):
-                print(subject, propertiesMap[k][0], propertiesMap[k][2](v))
                 g.add((subject, URIRef(propertiesMap[k][0]), propertiesMap[k][2](v)))
         return g
 
