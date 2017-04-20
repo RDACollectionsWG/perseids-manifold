@@ -14,7 +14,8 @@ setup(
         "Werkzeug>=0.11.3",
         "Flask-Caching>=1.2.0",
         "flask-cors==2.0.0",
-        "RDFLib>=4.2.2"
+        "RDFLib>=4.2.2",
+        "SPARQLWrapper>=1.8.0"
     ],
     include_package_data=True,
     test_suite="test",
