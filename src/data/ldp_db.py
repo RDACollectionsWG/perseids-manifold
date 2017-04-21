@@ -117,10 +117,10 @@ class LDPDataBase(DBInterface):
         #capabilities and #properties fragments
     '''
     def collection_to_graph(self,c_obj):
-        node = URIRef('')
-        capabilities = URIRef('#capabilities')
-        properties = URIRef('#properties')
-        g = Graph()
+        node = self.ldp(self.b64encode(c_obj.id))
+        capabilities = self.ldp(self.b64encode(c_obj.id)+'#capabilities')
+        properties = self.ldp(self.b64encode(c_obj.id)+'#properties')
+        g = Graph(identifier=node)
         g.add((node,RDF.type, RDA.Collection))
         return g + self.dict_to_graph(node, c_obj.dict(), inverted_properties['CollectionObject']) +\
                self.dict_to_graph(capabilities, c_obj.capabilities.dict(), inverted_properties['CollectionCapabilities']) +\
