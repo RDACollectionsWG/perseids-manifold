@@ -56,25 +56,45 @@ class LDPDataBase(DBInterface):
         This is almost ready.
     '''
     def set_collection(self, c_obj):
+        # create LD collection and declare as ldp:BasicContainer
+        ds = Dataset()
         collection = self.collection_to_graph(c_obj)
-        # todo: add rdf:types (BasicContainer, RDACollection)
-        collection.add((URIRef(''), RDF.type, LDP.BasicContainer))
-        # todo: response1 = POST to self.root
-        response = requests.post(self.root, data=collection.serialize(format="turtle"), headers={'Content-Type':'text/turtle','Link':'<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"','Slug':self.b64encode(c_obj.id)})
+        ds.add_graph(collection)
+        member = ds.graph(identifier=self.ldp(self.b64encode(c_obj.id)+'/member'))
+        ldp = ds.graph(identifier=LDP)
+
+        ds.add((self.ldp(), LDP.contains, collection.identifier, ldp))
+        ds.add((collection.identifier, RDF.type, LDP.BasicContainer, ldp))
+        ds.add((collection.identifier, RDF.type, LDP.Container, ldp))
+        ds.add((collection.identifier, RDF.type, LDP.RDFSource, ldp))
+        ds.add((collection.identifier, RDF.type, LDP.Resource, ldp))
+        ds.add((collection.identifier, LDP.interactionModel, LDP.BasicContainer, ldp))
+        ds.add((collection.identifier, DCTERMS.created, Literal(datetime.utcnow()), ldp))
+        ds.add((collection.identifier, DCTERMS.modified, Literal(datetime.utcnow()), ldp))
+
+        # add members container
+        ds.add((collection.identifier, LDP.contains, member.identifier, ldp))
+        ds.add((member.identifier, RDF.type, LDP.BasicContainer, ldp))
+        ds.add((member.identifier, RDF.type, LDP.Container, ldp))
+        ds.add((member.identifier, RDF.type, LDP.RDFSource, ldp))
+        ds.add((member.identifier, RDF.type, LDP.Resource, ldp))
+        ds.add((member.identifier, LDP.interactionModel, LDP.BasicContainer, ldp))
+        ds.add((member.identifier, DCTERMS.created, Literal(datetime.utcnow()), ldp))
+        ds.add((member.identifier, DCTERMS.modified, Literal(datetime.utcnow()), ldp))
+
+        insert = ""
+
+        # todo: post as SPARQL INSERT to endpoint
+        response = requests.post(self.sparql.update, data=insert)
         if response.status_code is 201:
-            # todo: response2 = POST basiccontainer to self.root+c_obj.id+/members
-            member = Graph()
-            member.add((URIRef(''), RDF.type, LDP.BasicContainer))
-            loc = response.headers.get('Location')
-            requests.post(loc, data=member.serialize(format="turtle"), headers={'Content-Type':'text/turtle','Link':'<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"','Slug':'member'})
+            return c_obj
         else:
             raise KeyError
-        # todo: return c_obj
-        return c_obj
+        assert False
 
     def del_collection(self, id):
         requests.delete(self.root+id)
-        # todo: wrap into flask response
+        # todo: switch to sparql delete statement
         assert False
 
     def get_member(self, cid, mid:None):
