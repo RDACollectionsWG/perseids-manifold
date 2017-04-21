@@ -49,7 +49,7 @@ class LDPDataBase(DBInterface):
         if id is not None:
             contents = [self.graph_to_collection(Graph().parse(self.ldp(self.b64encode(id))))]
         else:
-            contents = [self.graph_to_collection(Graph().parse(str(collection))) for collection in Graph().parse(self.root).objects(None, LDP.contains)]
+            contents = [self.graph_to_collection(Graph().parse(str(collection))) for collection in Graph().parse(self.ldp()).objects(None, LDP.contains)]
         return CollectionResultSet(contents)
 
     '''
