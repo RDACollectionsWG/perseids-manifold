@@ -44,8 +44,9 @@ class LDPDataBase(DBInterface):
         self.sparql = Struct(select=server["sparql/select"], update=server["sparql/update"])
 
     def get_collection(self, id:None):
+        # todo: Graph() is a placeholder and needs to be replaced with the actual backend (either use SPARQLStore or raw requests.post)
         if id is not None:
-            contents = [self.graph_to_collection(Graph().parse(self.root+self.b64encode(id)))]
+            contents = [self.graph_to_collection(Graph().parse(self.ldp(self.b64encode(id))))]
         else:
             contents = [self.graph_to_collection(Graph().parse(str(collection))) for collection in Graph().parse(self.root).objects(None, LDP.contains)]
         return CollectionResultSet(contents)
