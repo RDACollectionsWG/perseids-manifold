@@ -38,8 +38,10 @@ inverted_properties = { key:{v[0]: [k,v[1],v[2]] for k,v in value.items() if not
 
 class LDPDataBase(DBInterface):
 
-    def __init__(self, root):
-        self.root = root if root.endswith("/") else root+"/"
+    def __init__(self, server):
+        server = Namespace(server) if server.endswith("/") else Namespace(server+"/")
+        self.ldp = lambda slug=None: server.ldp if slug is None else server["ldp"+slug[:-1]] if slug.startswith("/") and slug.endswith("/") else server["ldp"+slug] if slug.startswith("/") else server["ldp/"+slug[:-1]] if slug.endswith("/") else server["ldp/"+slug]
+        self.sparql = Struct(select=server["sparql/select"], update=server["sparql/update"])
 
     def get_collection(self, id:None):
         if id is not None:
