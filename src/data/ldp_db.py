@@ -144,8 +144,9 @@ class LDPDataBase(DBInterface):
         return MemberItem()
         assert False
 
-    def member_to_graph(self, m_obj):
+    def member_to_graph(self, c_id, m_obj):
+        ldp_uri = self.ldp(self.b64encode(c_id)+"/member/"+self.b64encode(m_obj))
         m_graph = Graph()
-        m_graph.add((URIRef(""), DCTERMS.identifier, URIRef(m_obj.id)))
-        m_graph.add((URIRef(""), RDA.location, URIRef(m_obj.location)))
+        m_graph.add((ldp_uri, DCTERMS.identifier, URIRef(m_obj.id)))
+        m_graph.add((ldp_uri, RDA.location, URIRef(m_obj.location)))
         return m_graph
