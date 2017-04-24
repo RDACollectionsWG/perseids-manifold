@@ -82,25 +82,69 @@ class LDPDataBase(DBInterface):
             raise KeyError
 
     def del_collection(self, id):
-        requests.delete(self.root+id)
-        # todo: switch to sparql delete statement
-        assert False
+        found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(self.marmotta.ldp(encoder.encode(id))), headers={"Accept":"application/sparql-results+json"}).json()).askAnswer
+        if found:
+            delete =self.sparql.collections.delete(self.marmotta.ldp(encoder.encode(id)))
+            response = requests.post(self.marmotta.sparql.update, data=delete)
+            if response.status_code is 200:
+                return True
+        raise KeyError
 
-    def get_member(self, cid, mid:None):
-        # todo: write graph_to_member
-        # todo: set up properties for MemberItem
-        # todo: return MemberResultSet
-        assert False
+    def update_collection(self, c_obj):
+        self.del_collection(c_obj.id)
+        self.set_collection(c_obj)
+        return c_obj
+
+    def get_member(self, cid, mid=None):
+        # todo: ASK and check if member exists
+        if mid is not None:
+            id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(mid))
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(id), headers={"Accept":"application/sparql-results+json"})
+            ds =self.sparql.result_to_dataset(JSONResult(response.json()))
+            contents = self.RDA.graph_to_member(ds.graph(id))
+            if len(contents) is 0:
+                raise KeyError
+        else:
+            listed = self.sparql.collections.list(s=self.marmotta.ldp(encoder.encode(cid)+"/member"), p=LDP.ns.contains)
+            response = requests.post(self.marmotta.sparql.select, data=listed, headers={"Accept":"application/sparql-results+json"})
+            members = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
+            contents = []
+            for member in members:
+                result = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(member), headers={"Accept":"application/sparql-results+json"}).json())
+                graph =self.sparql.result_to_dataset(result).graph(member)
+                contents += self.RDA.graph_to_member(graph)
+        return contents
 
     def set_member(self, cid, m_obj):
-        # todo: write member_to_graph
-        # todo: serialize to turtle
-        # todo: send to self.root+b64encode(cid)+members
-        assert False
+        c_id = self.marmotta.ldp(encoder.encode(cid))
+        m_id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m_obj.id))
+        found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(c_id), headers={"Accept":"application/sparql-results+json"}).json()).askAnswer
+        ds = Dataset()
+        member = ds.graph(identifier=m_id)
+        member += self.RDA.member_to_graph(cid,m_obj)
+        ldp = ds.graph(identifier=LDP.ns)
+        ldp += LDP.add_contains(c_id+"/member",m_id,False)
+        insert =self.sparql.members.insert(ds)
+        response = requests.post(self.marmotta.sparql.update, data=insert)
+        if response.status_code is 200:
+            return m_obj
+        else:
+            raise KeyError
 
     def del_member(self, cid, mid):
-        # todo: requests.delete(self.root+id)
-        assert False
+        id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(mid))
+        found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.members.ask(id), headers={"Accept":"application/sparql-results+json"}).json()).askAnswer
+        if found:
+            delete = self.sparql.collections.delete(id)
+            response = requests.post(self.marmotta.sparql.update, data=delete)
+            if response.status_code is 200:
+                return True
+        raise KeyError
+
+    def update_member(self, cid, m_obj):
+        self.del_member(cid, m_obj.id)
+        self.set_member(cid, m_obj)
+        return m_obj
 
     def get_service(self):
         assert False
