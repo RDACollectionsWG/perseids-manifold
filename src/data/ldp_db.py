@@ -147,10 +147,28 @@ class LDPDataBase(DBInterface):
         return m_obj
 
     def get_service(self):
-        assert False
-        
+        id = self.marmotta.ldp("service")
+        found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.service.ask(id), headers={"Accept":"application/sparql-results+json"}).json()).askAnswer
+        if found:
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.service.select(id), headers={"Accept":"application/sparql-results+json"})
+            ds =self.sparql.result_to_dataset(JSONResult(response.json()))
+            s_obj =self.RDA.graph_to_service(ds.graph(id))
+            return s_obj
+        else:
+            return Service()
+
     def set_service(self, s_obj):
-        assert False
+        ds = Dataset()
+        service = ds.graph(identifier=self.marmotta.ldp("service"))
+        service += self.RDA.service_to_graph(s_obj)
+        ldp = ds.graph(identifier=LDP.ns)
+        ldp += LDP.add_contains(self.marmotta.ldp(),service.identifier,False)
+        insert = self.sparql.service.insert(ds)
+        response = requests.post(self.marmotta.sparql.update, data=insert)
+        if response.status_code is 200:
+            return s_obj
+        else:
+            raise IOError
     
     def get_id(self, type):
         assert False
