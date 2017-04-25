@@ -1,48 +1,23 @@
 import base64
 import requests
-from datetime import datetime
-from rdflib import Dataset, Graph, Namespace, URIRef, Literal
-from rdflib.namespace import RDF, DCTERMS
+from rdflib import Dataset, Variable
+from rdflib.plugins.sparql.results.jsonresults import JSONResult
 from .db import DBInterface
 from src.collections.models import *
 from src.members.models import *
-
-LDP = Namespace("http://www.w3.org/ns/ldp#")
-RDA = Namespace("http://rd-alliance.org/ns/collections#")
-
-properties = {
-    'CollectionObject': {
-        str(DCTERMS.identifier): ['id', str, Literal],
-        str(DCTERMS.description): ['description', str, Literal],
-        str(RDA.hasCapabilities): ['capabilities', lambda x: x, lambda x: URIRef("#capabilities")],
-        str(RDA.hasProperties): ['properties', lambda x: x, lambda x: URIRef("#properties")]
-    },
-    'CollectionCapabilities': {
-        str(RDA.isOrdered): ['isOrdered', bool, Literal],
-        str(RDA.appendsToEnd): ['appendsToEnd', bool, Literal],
-        str(RDA.maxLength): ['maxLength', int, Literal],
-        str(RDA.membershipIsMutable): ['membershipIsMutable', bool, Literal],
-        str(RDA.metadataIsMutable): ['metadataIsMutable', bool, Literal],
-        str(RDA.restrictedToType): ['restrictedToType', bool, Literal],
-        str(RDA.supportsRole): ['supportsRoles', bool, Literal],
-    },
-    'CollectionProperties': {
-        str(RDA.modelType): ['modelType', str, URIRef],
-        str(RDA.descriptionOntology): ['descriptionOntology', str, URIRef],
-        str(DCTERMS.license): ['license', str, URIRef],
-        str(DCTERMS.rightsHolder): ['ownership', str, Literal],
-        str(RDA.hasAccessRestrictions): ['hasAccessRestrictions', bool, Literal]
-    }
-}
-
-inverted_properties = { key:{v[0]: [k,v[1],v[2]] for k,v in value.items() if not k.startswith("__")} for key,value in properties.items() if not key.startswith("__")}
+from src.service.models import Service
+from src.utils.ldp import LDP
+from src.utils.sparql import SPARQLTools
+from src.utils.marmotta import Marmotta
+from src.utils.url_encoder import encoder
+from src.utils.rda import RDATools
 
 class LDPDataBase(DBInterface):
 
     def __init__(self, server):
-        server = Namespace(server) if server.endswith("/") else Namespace(server+"/")
-        self.ldp = lambda slug=None: server.ldp if slug is None else server["ldp"+slug[:-1]] if slug.startswith("/") and slug.endswith("/") else server["ldp"+slug] if slug.startswith("/") else server["ldp/"+slug[:-1]] if slug.endswith("/") else server["ldp/"+slug]
-        self.sparql = Struct(select=server["sparql/select"], update=server["sparql/update"])
+        self.marmotta = Marmotta(server)
+        self.sparql = SPARQLTools()
+        self.RDA = RDATools(self.marmotta)
 
     def get_collection(self, id=None):
         # todo: ASK and check if collection exists
@@ -172,52 +147,4 @@ class LDPDataBase(DBInterface):
     
     def get_id(self, type):
         assert False
-
-    def b64encode(self, s):
-        return base64.b64encode(str.encode(s)).decode()
-
-    def b64decode(self, s):
-        return base64.b64decode(s).decode()
-
-    def graph_to_collection(self, g):
-        containers = [self.graph_to_dict(g, sbj, properties['CollectionObject']) for sbj in g.subjects(RDF.type, LDP.Container)]
-        for c in containers:
-            c['capabilities'] = self.graph_to_dict(g, c['capabilities'], properties['CollectionCapabilities'])
-            c['properties'] = self.graph_to_dict(g, c['properties'], properties['CollectionProperties'])
-        return [CollectionObject(**c) for c in containers]
-
-    '''
-        Convert a collection object into a set of triples,
-        using Base64 encoding for URL conformant IDs and
-        #capabilities and #properties fragments
-    '''
-    def collection_to_graph(self,c_obj):
-        node = self.ldp(self.b64encode(c_obj.id))
-        capabilities = self.ldp(self.b64encode(c_obj.id)+'#capabilities')
-        properties = self.ldp(self.b64encode(c_obj.id)+'#properties')
-        g = Graph(identifier=node)
-        g.add((node,RDF.type, RDA.Collection))
-        return g + self.dict_to_graph(node, c_obj.dict(), inverted_properties['CollectionObject']) +\
-               self.dict_to_graph(capabilities, c_obj.capabilities.dict(), inverted_properties['CollectionCapabilities']) +\
-               self.dict_to_graph(properties, c_obj.properties.dict(), inverted_properties['CollectionProperties'])
-
-    def graph_to_dict(self, graph, node, propertiesMap):
-        return {propertiesMap[str(prd)][0]: propertiesMap[str(prd)][1](obj) for (prd, obj) in graph.predicate_objects(node) if str(prd) in propertiesMap}
-
-    def dict_to_graph(self, subject, dict, propertiesMap):
-        g = Graph()
-        for k,v in dict.items():
-            if not k.startswith("__"):
-                g.add((subject, URIRef(propertiesMap[k][0]), propertiesMap[k][2](v)))
-        return g
-
-    def graph_to_member(self,g):
-        return MemberItem()
-        assert False
-
-    def member_to_graph(self, c_id, m_obj):
-        ldp_uri = self.ldp(self.b64encode(c_id)+"/member/"+self.b64encode(m_obj))
-        m_graph = Graph()
-        m_graph.add((ldp_uri, DCTERMS.identifier, URIRef(m_obj.id)))
-        m_graph.add((ldp_uri, RDA.location, URIRef(m_obj.location)))
-        return m_graph
+        
