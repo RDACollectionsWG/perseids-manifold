@@ -17,8 +17,8 @@ class CollectionObject(Model):
         if any(map(lambda x: x is None, [id, capabilities, properties])):
             raise ModelError()
         self.id = id or 'http://example.org/mem/'+str(randint(100000, 999999)) # todo: make parsing safe and id minting formalized, e.g. give Service Object a function
-        self.capabilities = capabilities
-        self.properties = properties
+        self.capabilities = capabilities if isinstance(capabilities, CollectionCapabilities) else CollectionCapabilities(**capabilities)
+        self.properties = properties if isinstance(properties, CollectionProperties) else CollectionProperties(**properties)
         if description:
             self.description = description
 
@@ -51,15 +51,17 @@ class CollectionProperties(Model):
                  hasAccessRestrictions=None,
                  memberOf=None,
                  descriptionOntology=None):
-        if any(map(lambda x: x is None, [ownership, license, modelType, hasAccessRestrictions, memberOf, descriptionOntology])):
+        if any(map(lambda x: x is None, [ownership, license, modelType, hasAccessRestrictions, descriptionOntology])):
             raise ModelError()
         self.ownership = ownership
         self.license = license
         self.modelType = modelType
         self.hasAccessRestrictions = hasAccessRestrictions
         self.descriptionOntology = descriptionOntology
-        if memberOf:
+        self.memberOf = []
+        if memberOf is not None:
             self.memberOf = memberOf
+
 
 
 classList = [CollectionObject, CollectionCapabilities, CollectionProperties]
