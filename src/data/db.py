@@ -20,11 +20,11 @@ class DBInterface(object, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def set_member(self, m_obj):
+    def set_member(self, c_id, m_obj):
         pass
 
     @abc.abstractmethod
-    def del_member(self, id):
+    def del_member(self, c_id, m_id):
         pass
 
     @abc.abstractmethod
