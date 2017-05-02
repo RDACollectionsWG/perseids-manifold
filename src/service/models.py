@@ -21,7 +21,7 @@ class Service(Model):
                  ruleBasedGeneration=None,
                  maxExpansionDepth=None,
                  providesVersioning=None,
-                 supportedCollectionsOperations=None,
+                 supportedCollectionOperations=None,
                  supportedModelTypes=None):
         if any(map(lambda x: x is None, [
             providesCollectionPids,
@@ -30,10 +30,16 @@ class Service(Model):
             asynchronousActions,
             ruleBasedGeneration,
             maxExpansionDepth,
-            providesVersioning,
-            supportedCollectionsOperations,
-            supportedModelTypes
+            providesVersioning
         ])):
+            print()
+            print("PID ", providesCollectionPids)
+            print("enf ", enforcesAccess)
+            print("supp ", supportsPagination)
+            print("asyn", asynchronousActions)
+            print("rule ", ruleBasedGeneration)
+            print("max ", maxExpansionDepth)
+            print("pro ", providesVersioning)
             raise ModelError()
         self.providesCollectionPids = providesCollectionPids
         self.collectionPidProviderType = collectionPidProviderType
@@ -43,7 +49,7 @@ class Service(Model):
         self.ruleBasedGeneration = ruleBasedGeneration
         self.maxExpansionDepth = maxExpansionDepth
         self.providesVersioning = providesVersioning
-        self.supportedCollectionsOperations = [] if not supportedCollectionsOperations else supportedCollectionsOperations
+        self.supportedCollectionOperations = [] if not supportedCollectionOperations else supportedCollectionOperations
         self.supportedModelTypes = [] if not supportedModelTypes else supportedModelTypes
 
 
