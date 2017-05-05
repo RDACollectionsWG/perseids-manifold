@@ -1,4 +1,4 @@
-import base64
+import base64, random, string
 import requests
 from rdflib import Dataset, Variable
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
@@ -146,5 +146,9 @@ class LDPDataBase(DBInterface):
             raise IOError
     
     def get_id(self, type):
-        assert False
-        
+        id = ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
+        if type is CollectionObject:
+            id = "urn:cite:test_collections."+id
+        if type is MemberItem:
+            id = "urn:cite:test_members."+id
+        return id
