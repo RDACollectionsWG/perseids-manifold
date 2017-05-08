@@ -60,7 +60,7 @@ class CollectionProperties(Model):
         self.descriptionOntology = descriptionOntology
         self.memberOf = []
         if memberOf is not None:
-            self.memberOf = memberOf
+            self.memberOf = sorted(memberOf)
 
 
 

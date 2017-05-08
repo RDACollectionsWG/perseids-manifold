@@ -49,8 +49,8 @@ class Service(Model):
         self.ruleBasedGeneration = ruleBasedGeneration
         self.maxExpansionDepth = maxExpansionDepth
         self.providesVersioning = providesVersioning
-        self.supportedCollectionOperations = [] if not supportedCollectionOperations else supportedCollectionOperations
-        self.supportedModelTypes = [] if not supportedModelTypes else supportedModelTypes
+        self.supportedCollectionOperations = [] if not supportedCollectionOperations else sorted(supportedCollectionOperations)
+        self.supportedModelTypes = [] if not supportedModelTypes else sorted(supportedModelTypes)
 
 
 classList = [Service]

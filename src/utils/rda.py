@@ -77,9 +77,9 @@ class RDATools:
                     dct.update({key: value})
                 else:
                     if isinstance(dct[key],list):
-                        dct[key].append(value)
+                        dct[key] = sorted(dct[key] + [value])
                     else:
-                        dct[key] = [dct[key],value]
+                        dct[key] = sorted([dct[key],value])
         return dct
 
     def dict_to_graph(self, subject, dict, propertiesMap):
