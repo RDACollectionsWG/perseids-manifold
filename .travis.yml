@@ -10,7 +10,7 @@ services:
 
 before_install:
   - docker pull apache/marmotta
-  - docker run -d -p 32768:8080 apache/marmotta
+  - docker run -d -p 8080:8080 apache/marmotta
 
 install:
     - pip install -r requirements.txt

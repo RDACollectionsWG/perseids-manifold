@@ -5,4 +5,4 @@ class CollectionsAPI(Flask):
 
     def __init__(self, name):
         super(CollectionsAPI, self).__init__(name)
-        self.db = LDPDataBase("http://marmotta:8080/marmotta")
+        self.db = LDPDataBase("http://localhost:8080/marmotta")
