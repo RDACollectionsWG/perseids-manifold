@@ -1,4 +1,6 @@
+import os
 from src.app import CollectionsAPI
+from config import Config, FilesystemDBConfig, ComposeConfig
 from flask import send_from_directory
 from src.collections.routes import routes as r_collections
 from src.members.routes import routes as r_members
@@ -8,6 +10,17 @@ from src.utils.json import *
 from flask_cors import CORS, cross_origin
 
 app = CollectionsAPI(__name__)
+
+app.config.from_object({
+    'filesystem': FilesystemDBConfig,
+    'docker-compose': ComposeConfig,
+    'default': Config
+}.get(os.environ.get('COLLECTIONS_API_ENV'), Config))
+if os.environ.get('COLLECTIONS_API_SETTINGS'):
+    app.config.from_envvar('COLLECTIONS_API_SETTINGS')
+
+app.initialize(app.config.get('RDA_API_DB')(app.config.get('RDA_API_LOCATION')))
+
 CORS(app)
 app.json_encoder = RDAJSONEncoder
 app.json_decoder = RDAJSONDecoder

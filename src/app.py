@@ -1,8 +1,12 @@
 from flask import Flask
-from src.data.ldp_db import LDPDataBase
+from src.data.null_db import NullDB
 
 class CollectionsAPI(Flask):
 
     def __init__(self, name):
         super(CollectionsAPI, self).__init__(name)
-        self.db = LDPDataBase("http://localhost:8080/marmotta")
+        self.db = NullDB()
+
+    def initialize(self, db):
+        self.db = db
+        #self.service = db.get_service()
