@@ -15,7 +15,7 @@ class DbTests(TestCase):
         print("\n// Test Filesystem DB ------------------")
 
     def setUp(self):
-        self.dir = TemporaryDirectory(dir='test/data')
+        self.dir = TemporaryDirectory(dir=os.environ.get('COLLECTIONS_API_TEST_DIR','test/data'))
         #self.dir = mkdtemp(dir='./test/data')
         self.db = FilesystemDB(self.dir.name)
         self.mock = RandomGenerator()

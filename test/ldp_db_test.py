@@ -18,7 +18,7 @@ class DbTests(TestCase):
         print("\n// Test LDP DB ------------------")
 
     def setUp(self):
-        self.server = 'http://localhost:8080/marmotta'
+        self.server = os.environ.get('COLLECTIONS_API_TEST_DB','http://localhost:8080/marmotta')
         self.db = LDPDataBase(self.server)
         requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
         self.mock = RandomGenerator()
