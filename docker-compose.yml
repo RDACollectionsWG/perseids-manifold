@@ -2,6 +2,8 @@ version: '2'
 services:
   web:
     build: .
+    environment:
+     - COLLECTIONS_API_ENV=docker-compose
     ports:
      - "5000:5000"
     volumes:
