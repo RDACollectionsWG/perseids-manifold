@@ -8,9 +8,6 @@ services:
      - .:/app
     links:
      - "marmotta"
+    entrypoint: ./wait-for-it.sh -h http://marmotta:8080/marmotta -t 60 -- python3 run.py
   marmotta:
     image: "apache/marmotta:latest"
-    #ports:
-    # - "8080:8080"
-    #expose:
-    # - "8080"

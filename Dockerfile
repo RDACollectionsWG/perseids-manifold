@@ -1,7 +1,6 @@
 FROM ubuntu:latest
 MAINTAINER Frederik Baumgardt "frederik.baumgardt@tufts.edu"
-RUN apt-get update -y
-RUN apt-get install -y python3-pip python3-dev build-essential
+RUN apt-get update -y && apt-get install -y python3-pip python3-dev build-essential curl
 ADD ./ /app
 WORKDIR /app
 RUN ls -la
