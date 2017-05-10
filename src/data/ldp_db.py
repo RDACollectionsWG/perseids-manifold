@@ -65,7 +65,7 @@ class LDPDataBase(DBInterface):
                 return True
         raise KeyError
 
-    def update_collection(self, c_obj):
+    def upd_collection(self, c_obj):
         self.del_collection(c_obj.id)
         self.set_collection(c_obj)
         return c_obj
@@ -116,7 +116,7 @@ class LDPDataBase(DBInterface):
                 return True
         raise KeyError
 
-    def update_member(self, cid, m_obj):
+    def upd_member(self, cid, m_obj):
         self.del_member(cid, m_obj.id)
         self.set_member(cid, m_obj)
         return m_obj

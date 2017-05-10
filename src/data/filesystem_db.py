@@ -71,6 +71,16 @@ class FilesystemDB(DBInterface):
         remove(filename)
         return True
 
+    def upd_collection(self, c_obj):
+        self.del_collection(c_obj.id)
+        self.set_collection(c_obj)
+        return c_obj
+
+    def upd_member(self, cid, m_obj):
+        self.del_member(cid, m_obj.id)
+        self.set_member(cid, m_obj)
+        return m_obj
+
     def get_id(self, type_class):
         return ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
 
