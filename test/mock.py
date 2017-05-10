@@ -125,7 +125,7 @@ class RandomGenerator:
         g.add((capabilities, RDA.memberShipIsMutable, Literal(obj.capabilities.membershipIsMutable)))
         g.add((capabilities, RDA.metadataIsMutable, Literal(obj.capabilities.metadataIsMutable)))
         g.add((capabilities, RDA.restrictedToType, Literal(obj.capabilities.restrictedToType)))
-        g.add((capabilities, RDA.supportsRole, Literal(obj.capabilities.supportsRole)))
+        g.add((capabilities, RDA.supportsRoles, Literal(obj.capabilities.supportsRoles)))
         g.add((properties, RDA.modelType, Literal(obj.properties.modelType)))
         g.add((properties, RDA.descriptionOntology, Literal(obj.properties.descriptionOntology)))
         g.add((properties, DCTERMS.license, Literal(obj.properties.license)))

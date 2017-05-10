@@ -28,7 +28,7 @@ class RDATools:
                 str(self.ns.membershipIsMutable): ['membershipIsMutable', boolean, Literal],
                 str(self.ns.metadataIsMutable): ['metadataIsMutable', boolean, Literal],
                 str(self.ns.restrictedToType): ['restrictedToType', str, Literal],
-                str(self.ns.supportsRole): ['supportsRoles', boolean, Literal],
+                str(self.ns.supportsRoles): ['supportsRoles', boolean, Literal],
             },
             'CollectionProperties': {
                 str(self.ns.modelType): ['modelType', str, URIRef],
@@ -67,7 +67,6 @@ class RDATools:
 
     def graph_to_dict(self, graph, node, propertiesMap):
         dct = {}
-        #print("\n")
         for (prd, obj) in graph.predicate_objects(node):
             if str(prd) in propertiesMap:
                 key = propertiesMap[str(prd)][0]
