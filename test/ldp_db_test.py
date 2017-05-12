@@ -122,7 +122,7 @@ class DbTests(TestCase):
              d_obj.capabilities.isOrdered = not c_obj.capabilities.isOrdered
              self.db.set_collection(c_obj)
              self.assertNotEqual(self.db.get_collection(c_obj.id).pop().capabilities.isOrdered, d_obj.capabilities.isOrdered)
-             self.db.update_collection(d_obj)
+             self.db.upd_collection(d_obj)
              self.assertEqual(self.db.get_collection(c_obj.id).pop().capabilities.isOrdered, d_obj.capabilities.isOrdered)
 
     def test_db_create_member(self):
@@ -173,7 +173,7 @@ class DbTests(TestCase):
              n_obj.location = m_obj.location+"x"
              self.db.set_collection(c_obj)
              self.db.set_member(c_obj.id, m_obj)
-             self.db.update_member(c_obj.id, n_obj)
+             self.db.upd_member(c_obj.id, n_obj)
              self.assertEqual(self.db.get_member(c_obj.id, m_obj.id)[0].location, n_obj.location)
 
     def test_db_create_service(self):

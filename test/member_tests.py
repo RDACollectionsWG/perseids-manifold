@@ -77,13 +77,12 @@ class MembersTest(TestCase):
             c_obj = self.mock.collection()
             self.app.db.set_collection(c_obj)
             m_dicts = [self.mock.member().__dict__ for i in range(5)]
-            for m in m_dicts:
-                del m['id']
             self.assertListEqual(self.app.db.get_member(c_obj.id), [])
             responses = [self.post("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members", json.dumps(m)) for m in m_dicts]
             for r in responses:
+                print(r.data)
                 self.assertEqual(r.status_code, 201)
-            sortedResponse = sorted([json.loads(response.data)['contents'][0] for response in responses], key=lambda x: x.location)
+            sortedResponse = sorted([json.loads(response.data).pop() for response in responses], key=lambda x: x.location)
             sortedMocks = sorted(m_dicts, key=lambda x: x['location'])
             for i in range(len(sortedMocks)):
                 self.assertEqual(sortedMocks[i]['location'], sortedResponse[i].location)
