@@ -4,6 +4,7 @@ from flask.views import MethodView
 from ..utils.errors import *
 from .models import *
 from flask import current_app
+import traceback
 
 
 class MemberView(MethodView):
@@ -50,8 +51,10 @@ class MemberView(MethodView):
                 except UnauthorizedError:
                     raise UnauthorizedError()
                 except:
+                    print(traceback.format_exc())
                     raise ParseError()
         except KeyError:
+            print(traceback.format_exc())
             raise NotFoundError()
         return jsonify(MemberResultSet(members)), 200
 
@@ -67,6 +70,7 @@ class MemberView(MethodView):
         except ForbiddenError:
             raise ForbiddenError()
         except:
+            print(traceback.format_exc())
             ParseError()
 
     def put(self, id, mid):
@@ -85,6 +89,7 @@ class MemberView(MethodView):
         except ForbiddenError:
             raise ForbiddenError()
         except:
+            print(traceback.format_exc())
             ParseError()  # todo: unexpected error
 
     def delete(self, id, mid):
@@ -98,6 +103,7 @@ class MemberView(MethodView):
         except ForbiddenError:
             raise ForbiddenError()
         except:
+            print(traceback.format_exc())
             ParseError()
 
 
