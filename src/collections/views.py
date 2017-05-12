@@ -51,9 +51,13 @@ class CollectionsView(MethodView):
     def post(self, id=None):
         if not id:
             try:
-                id = current_app.db.get_id(CollectionObject)
-                current_app.db.set_collection(CollectionObject(id=id, **json.loads(request.data)))
-                return jsonify(current_app.db.get_collection(id)[0]), 201
+                obj = json.loads(request.data)
+                if not isinstance(obj, Model):
+                    if current_app.db.get_service().providesCollectionPids:
+                        obj += {'id': current_app.db.get_id(CollectionObject)}
+                        obj = CollectionObject(**obj)
+                current_app.db.set_collection(obj)
+                return jsonify(current_app.db.get_collection(obj.id).pop()), 201
             except PermissionError:
                 raise UnauthorizedError()  # 401
             except:
