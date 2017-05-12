@@ -37,7 +37,7 @@ class RandomGenerator:
                     "memberOf": [],
                     "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md"
                 }),
-                "description": ''.join(random.choice(string.printable) for _ in range(random.randint(30, 50)))
+                "description": {'something': ''.join(random.choice(string.printable) for _ in range(random.randint(30, 50)))}
             })
 
     def member(self):
@@ -171,5 +171,3 @@ class RandomGenerator:
     #def result(self):
      #   graph = self.graph_service("")
       #  g = graph.identifier
-
-
