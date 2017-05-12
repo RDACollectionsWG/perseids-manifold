@@ -130,7 +130,18 @@ class LDPDataBase(DBInterface):
             s_obj =self.RDA.graph_to_service(ds.graph(id))
             return s_obj
         else:
-            return Service()
+            return Service(**{
+                "providesCollectionPids": False,
+                "collectionPidProviderType": False,
+                "enforcesAccess": False,
+                "supportsPagination": False,
+                "asynchronousActions": False,
+                "ruleBasedGeneration": False,
+                "maxExpansionDepth": -1,
+                "providesVersioning": False,
+                "supportedCollectionOperations": [],
+                "supportedModelTypes": []
+            })
 
     def set_service(self, s_obj):
         ds = Dataset()
