@@ -60,9 +60,13 @@ class MemberView(MethodView):
 
     def post(self, id):
         try:
-            posted = json.loads(request.data)
-            mid = current_app.db.get_id(MemberItem)
-            return jsonify(MemberResultSet([current_app.db.set_member(id, MemberItem(id=mid, **posted))])), 201
+            obj = json.loads(request.data)
+            #if not isinstance(obj, Model):
+            #    if current_app.db.get_service().providesCollectionPids:
+            #        obj += {'id': current_app.db.get_id(MemberItem)}
+            #        obj = MemberItem(**obj)
+            current_app.db.set_member(id, obj)
+            return jsonify(current_app.db.get_member(id, obj.id)), 201
         except (KeyError, FileNotFoundError, NotFoundError):
             raise NotFoundError()
         except UnauthorizedError:
