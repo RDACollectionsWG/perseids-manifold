@@ -9,61 +9,64 @@ from src.service.models import Service
 
 boolean = lambda x: True if str(x)=='true' else False
 
+def invert(dct):
+    return {v['label']: {'label':k, 'type':v['type'], 'rdf': v['rdf'], 'map':invert(v['map'])} for k,v in dct.items() if not k.startswith("__")}
+
 class RDATools:
 
     def __init__(self, marmotta):
         self.marmotta = marmotta
         self.ns = Namespace("http://rd-alliance.org/ns/collections#")
+        # todo: consider merging everything into a single k-v-store?
+        # todo: for that we would need to find alternative to iterating over maps in graph_to_dict()
         self.properties = {
             'CollectionObject': {
-                str(DCTERMS.identifier): ['id', str, Literal],
-                str(DCTERMS.description): ['description', str, Literal],
-                str(self.ns.hasCapabilities): ['capabilities', lambda x: x, lambda x: URIRef(x+"#capabilities")],  # todo: fix URIs
-                str(self.ns.hasProperties): ['properties', lambda x: x, lambda x: URIRef(x+"#properties")]
-            },
-            'CollectionCapabilities': {
-                str(self.ns.isOrdered): ['isOrdered', boolean, Literal],
-                str(self.ns.appendsToEnd): ['appendsToEnd', boolean, Literal],
-                str(self.ns.maxLength): ['maxLength', int, Literal],
-                str(self.ns.membershipIsMutable): ['membershipIsMutable', boolean, Literal],
-                str(self.ns.metadataIsMutable): ['metadataIsMutable', boolean, Literal],
-                str(self.ns.restrictedToType): ['restrictedToType', str, Literal],
-                str(self.ns.supportsRoles): ['supportsRoles', boolean, Literal],
-            },
-            'CollectionProperties': {
-                str(self.ns.modelType): ['modelType', str, URIRef],
-                str(self.ns.descriptionOntology): ['descriptionOntology', str, URIRef],
-                str(self.ns.memberOf): ['memberOf', str, URIRef],
-                str(DCTERMS.license): ['license', str, Literal],
-                str(DCTERMS.rightsHolder): ['ownership', str, Literal],
-                str(self.ns.hasAccessRestrictions): ['hasAccessRestrictions', boolean, Literal]
+                str(DCTERMS.identifier): {'label': 'id', 'type': str, 'rdf': Literal, 'map': {}},
+                str(DCTERMS.description): {'label': 'description', 'type': lambda x: x, 'rdf': lambda x: URIRef(x+"#description"), 'map': {}},
+                str(self.ns.hasCapabilities): {'label': 'capabilities', 'type': lambda x: x, 'rdf': lambda x: URIRef(x+"#capabilities"), 'map': {
+                    str(self.ns.isOrdered): {'label': 'isOrdered', 'type': boolean, 'rdf': Literal, 'map': {}},
+                    str(self.ns.appendsToEnd): {'label': 'appendsToEnd', 'type': boolean, 'rdf': Literal, 'map': {}},
+                    str(self.ns.maxLength): {'label': 'maxLength', 'type': int, 'rdf': Literal, 'map': {}},
+                    str(self.ns.membershipIsMutable): {'label': 'membershipIsMutable', 'type': boolean, 'rdf': Literal, 'map': {}},
+                    str(self.ns.metadataIsMutable): {'label': 'metadataIsMutable', 'type': boolean, 'rdf': Literal, 'map': {}},
+                    str(self.ns.restrictedToType): {'label': 'restrictedToType', 'type': str, 'rdf': Literal, 'map': {}},
+                    str(self.ns.supportsRoles): {'label': 'supportsRoles', 'type': boolean, 'rdf': Literal, 'map': {}},
+                }},  # todo: fix URIs
+                str(self.ns.hasProperties): {'label': 'properties', 'type': lambda x: x, 'rdf': lambda x: URIRef(x+"#properties"), 'map': {
+                    str(self.ns.modelType): {'label': 'modelType', 'type': str, 'rdf': URIRef, 'map': {}},
+                    str(self.ns.descriptionOntology): {'label': 'descriptionOntology', 'type': str, 'rdf': URIRef, 'map': {}},
+                    str(self.ns.memberOf): {'label': 'memberOf', 'type': str, 'rdf': URIRef, 'map': {}},
+                    str(DCTERMS.license): {'label': 'license', 'type': str, 'rdf': Literal, 'map': {}},
+                    str(DCTERMS.rightsHolder): {'label': 'ownership', 'type': str, 'rdf': Literal, 'map': {}},
+                    str(self.ns.hasAccessRestrictions): {'label': 'hasAccessRestrictions', 'type': boolean, 'rdf': Literal, 'map': {}}
+                }}
             },
             'MemberItem': {
-                str(DCTERMS.identifier): ['id', str, Literal],
-                str(self.ns.location): ['location', str, Literal],
-                str(self.ns.datatype): ['datatype', str, Literal],
-                str(self.ns.ontology): ['ontology', str, Literal],
-                str(self.ns.mappings): ['mappings', lambda x: x, lambda x: URIRef(x+'#mappings')]
-            },
-            'MemberItemMappings': {
-                str(self.ns.role): ['role', str, Literal],
-                str(self.ns.index): ['index', int, Literal],
-                str(self.ns.dateAdded): ['dateAdded', str, Literal]
+                str(DCTERMS.identifier): {'label': 'id', 'type': str, 'rdf': Literal, 'map': {}},
+                str(self.ns.location): {'label': 'location', 'type': str, 'rdf': Literal, 'map': {}},
+                str(self.ns.datatype): {'label': 'datatype', 'type': str, 'rdf': Literal, 'map': {}},
+                str(self.ns.ontology): {'label': 'ontology', 'type': str, 'rdf': Literal, 'map': {}},
+                str(self.ns.mappings): {'label': 'mappings', 'type': lambda x: x, 'rdf': lambda x: URIRef(x+'#mappings'), 'map': {
+                    str(self.ns.role): {'label': 'role', 'type': str, 'rdf': Literal, 'map': {}},
+                    str(self.ns.index): {'label': 'index', 'type': int, 'rdf': Literal, 'map': {}},
+                    str(self.ns.dateAdded): {'label': 'dateAdded', 'type': str, 'rdf': Literal, 'map': {}}
+                }}
             },
             'ServiceFeatures': {
-                str(self.ns.providesCollectionPids): ['providesCollectionPids', boolean, Literal],
-                str(self.ns.collectionPidProviderType): ['collectionPidProviderType', str, Literal], # todo: URIRef?
-                str(self.ns.enforcesAccess): ['enforcesAccess', boolean, Literal],
-                str(self.ns.supportsPagination): ['supportsPagination', boolean, Literal],
-                str(self.ns.asynchronousActions): ['asynchronousActions', boolean, Literal],
-                str(self.ns.ruleBasedGeneration): ['ruleBasedGeneration', boolean, Literal],
-                str(self.ns.maxExpansionDepth): ['maxExpansionDepth', int, Literal],
-                str(self.ns.providesVersioning): ['providesVersioning', boolean, Literal],
-                str(self.ns.supportedCollectionOperations): ['supportedCollectionOperations', str, Literal],
-                str(self.ns.supportedModelTypes): ['supportedModelTypes', str, URIRef]
+                str(self.ns.providesCollectionPids): {'label': 'providesCollectionPids', 'type': boolean, 'rdf': Literal, 'map': {}},
+                str(self.ns.collectionPidProviderType): {'label': 'collectionPidProviderType', 'type': str, 'rdf': Literal, 'map': {}}, # todo: URIRef?
+                str(self.ns.enforcesAccess): {'label': 'enforcesAccess', 'type': boolean, 'rdf': Literal, 'map': {}},
+                str(self.ns.supportsPagination): {'label': 'supportsPagination', 'type': boolean, 'rdf': Literal, 'map': {}},
+                str(self.ns.asynchronousActions): {'label': 'asynchronousActions', 'type': boolean, 'rdf': Literal, 'map': {}},
+                str(self.ns.ruleBasedGeneration): {'label': 'ruleBasedGeneration', 'type': boolean, 'rdf': Literal, 'map': {}},
+                str(self.ns.maxExpansionDepth): {'label': 'maxExpansionDepth', 'type': int, 'rdf': Literal, 'map': {}},
+                str(self.ns.providesVersioning): {'label': 'providesVersioning', 'type': boolean, 'rdf': Literal, 'map': {}},
+                str(self.ns.supportedCollectionOperations): {'label': 'supportedCollectionOperations', 'type': str, 'rdf': Literal, 'map': {}},
+                str(self.ns.supportedModelTypes): {'label': 'supportedModelTypes', 'type': str, 'rdf': URIRef, 'map': {}}
             }
         }
-        self.inverted_properties = { key:{v[0]: [k,v[1],v[2]] for k,v in value.items() if not k.startswith("__")} for key,value in self.properties.items() if not key.startswith("__")}
+        # todo: fix
+        self.inverted_properties = { key:invert(value) for key,value in self.properties.items() if not key.startswith("__")}
 
     def graph_to_dict(self, graph, node, propertiesMap):
         dct = {}
