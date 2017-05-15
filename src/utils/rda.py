@@ -68,6 +68,12 @@ class RDATools:
         # todo: fix
         self.inverted_properties = { key:invert(value) for key,value in self.properties.items() if not key.startswith("__")}
 
+    """
+    Convert a graph to a dictionary
+    :parameter graph is the rdflib.Graph object which contains the whole graph
+    :parameter node is the identifier for the object to be extracted as dictionary
+    :parameter propertiesMap contain the conversion rules
+    """
     def graph_to_dict(self, graph, node, propertiesMap):
         dct = {}
         for (prd, obj) in graph.predicate_objects(node):
@@ -84,18 +90,36 @@ class RDATools:
                         dct[key] = sorted([dct[key],value])
         return dct
 
-    def dict_to_graph(self, subject, dict, propertiesMap):
-        g = Graph()
-        for k,v in dict.items():
-            if not k.startswith("__"):
+
+    """
+    Convert a graph to a dictionary
+    :parameter dict is the dictionary to be converted
+    :parameter subject is the identifier for the object in the dictionary
+    :parameter propertiesMap contain the conversion rules
+    """
+    def dict_to_graph(self, val, key=None, subject=None, map=None, g=Graph()):
+        if isinstance(val, list) and key and subject:
+            # note: if List then add items
+            for item in val:
+                self.dict_to_graph(item, key=key, subject=subject, map=map, g=g)
+        elif isinstance(val, dict):
+            if not subject:
+                subject = g.identifier
+            for k,v in [(k,v) for k,v in val.items() if not k.startswith("__")]:
                 if isinstance(v, list):
-                    for w in v:
-                        g.add((subject, URIRef(propertiesMap[k][0]), propertiesMap[k][2](w)))
+                    self.dict_to_graph(v, key=k, subject=subject, map=map, g=g) # same subject, map
+                elif isinstance(v, dict):
+                    object = map.get(k,{'rdf':lambda x: x})['rdf'](subject)
+                    g.add((subject, URIRef(map.get(k, {'label':k})['label']), object)) # same subject, map, obj w/ subject
+                    self.dict_to_graph(v,key=k,subject=object,map=map.get(k,{'map':{}})['map'], g=g), # subject changed, map changed
                 else:
-                    if k in ["capabilities", "properties", "mappings"]:
-                        g.add((subject, URIRef(propertiesMap[k][0]), propertiesMap[k][2](subject)))
-                    else:
-                        g.add((subject, URIRef(propertiesMap[k][0]), propertiesMap[k][2](v)))
+                    obj = map.get(key,{'rdf': lambda x: URIRef(x) if str(x).startswith("http://") else Literal(x)})['rdf'](v)
+                    g.add((subject, URIRef(map.get(k, {'label':k})['label']), obj)) # same subject,
+        else:
+            # note: if simple type then add to graph
+            prop = URIRef(map.get(key, {'label': str(key)})['label']) # same subject, map
+            obj = map.get(key,{'rdf': lambda x: URIRef(x) if str(x).startswith("http://") else Literal(x)})['rdf'](val)
+            g.add((subject, prop, obj))
         return g
 
     def graph_to_collection(self, g):
