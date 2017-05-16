@@ -26,6 +26,7 @@ class MemberView(MethodView):
             if mid:
                 try:
                     members = current_app.db.get_member(id, mid)
+                    result = members[0]
                 except UnauthorizedError:
                     raise UnauthorizedError()
             else:
@@ -47,13 +48,14 @@ class MemberView(MethodView):
                         members = [m for m in members if hasattr(m,'mappings') and m.mappings.index == index]
                     if date_added:
                         members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
+                    result = MemberResultSet(members)
                 except UnauthorizedError:
                     raise UnauthorizedError()
                 except:
                     raise ParseError()
         except KeyError:
             raise NotFoundError()
-        return jsonify(MemberResultSet(members)), 200
+        return jsonify(result), 200
 
     def post(self, id):
         try:
