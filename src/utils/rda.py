@@ -75,11 +75,17 @@ class RDATools:
     :parameter propertiesMap contain the conversion rules
     """
     def graph_to_dict(self, graph, node, propertiesMap):
+        subnodes = set(s for s in graph.subjects() if s != node)
         dct = {}
+        print("STATE: ", subnodes, node)
         for (prd, obj) in graph.predicate_objects(node):
-            if str(prd) in propertiesMap:
-                key = propertiesMap[str(prd)][0]
-                value = propertiesMap[str(prd)][1](obj)
+            if obj in subnodes:
+                key = propertiesMap.get(str(prd),{'label':str(prd)}).get('label')
+                dct.update({key: self.graph_to_dict(graph,obj,propertiesMap.get(str(prd),{'map':{}}).get('map'))})
+            elif str(prd) in propertiesMap or propertiesMap == {}:
+                print(str(prd))
+                key = propertiesMap.get(str(prd),{'label':str(prd)}).get('label')
+                value = propertiesMap.get(str(prd),{'type':str}).get('type')(obj)
                 #print(key, ": ", obj.n3(), " -> ", value)
                 if not key in dct:
                     dct.update({key: value})
@@ -89,7 +95,6 @@ class RDATools:
                     else:
                         dct[key] = sorted([dct[key],value])
         return dct
-
 
     """
     Convert a graph to a dictionary
