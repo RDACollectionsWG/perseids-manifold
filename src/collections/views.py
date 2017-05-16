@@ -21,6 +21,7 @@ class CollectionsView(MethodView):
         if id:
             try:
                 collections = current_app.db.get_collection(id)
+                result = collections[0]
             except KeyError:
                 raise NotFoundError()
             except FileNotFoundError:
@@ -39,9 +40,10 @@ class CollectionsView(MethodView):
                     collections = [c for c in collections if c.capabilities.restrictedToType == member_type]
                 if ownership:
                     collections = [c for c in collections if c.properties.ownership == ownership]
+                result = CollectionResultSet(collections)
             except:
                 raise ParseError()
-        return jsonify(CollectionResultSet(collections)), 200
+        return jsonify(result), 200
 
     def post(self, id:None):
         if not id:
