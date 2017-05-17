@@ -52,7 +52,7 @@ class MembersTest(TestCase):
             for r in responses:
                 self.assertEqual(r['out'].status_code, 200)
                 # compare members
-                self.assertDictEqual(json.loads(r['out'].data)['contents'][0].__dict__, r['in'].__dict__)
+                self.assertDictEqual(json.loads(r['out'].data).__dict__, r['in'].__dict__)
 
     def test_members_get(self):
         with self.app.app_context():
