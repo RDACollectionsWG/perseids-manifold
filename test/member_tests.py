@@ -80,7 +80,6 @@ class MembersTest(TestCase):
             self.assertListEqual(self.app.db.get_member(c_obj.id), [])
             responses = [self.post("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members", json.dumps(m)) for m in m_dicts]
             for r in responses:
-                print(r.data)
                 self.assertEqual(r.status_code, 201)
             sortedResponse = sorted([json.loads(response.data).pop() for response in responses], key=lambda x: x.location)
             sortedMocks = sorted(m_dicts, key=lambda x: x['location'])
