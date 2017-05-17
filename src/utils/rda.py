@@ -80,11 +80,11 @@ class RDATools:
         # print("STATE: ", subnodes, node)
         for (prd, obj) in graph.predicate_objects(node):
             if obj in subnodes:
-                key = propertiesMap.get(str(prd),{'label':str(prd)}).get('label')
+                key = propertiesMap.get(str(prd),{'label':str(prd).replace(str(node)+"@","")}).get('label')
                 dct.update({key: self.graph_to_dict(graph,obj,propertiesMap.get(str(prd),{'map':{}}).get('map'))})
             elif str(prd) in propertiesMap or propertiesMap == {}:
                 # print(str(prd))
-                key = propertiesMap.get(str(prd),{'label':str(prd)}).get('label')
+                key = propertiesMap.get(str(prd),{'label':str(prd).replace(str(node)+"@","")}).get('label')
                 value = propertiesMap.get(str(prd),{'type':str}).get('type')(obj)
                 # print(key, ": ", obj.n3(), " -> ", value)
                 if not key in dct:
@@ -115,14 +115,14 @@ class RDATools:
                     self.dict_to_graph(v, key=k, subject=subject, map=map, g=g) # same subject, map
                 elif isinstance(v, dict):
                     object = map.get(k,{'rdf':lambda x: x})['rdf'](subject)
-                    g.add((subject, URIRef(map.get(k, {'label':k})['label']), object)) # same subject, map, obj w/ subject
+                    g.add((subject, URIRef(map.get(k, {'label':str(subject)+"@"+k})['label']), object)) # same subject, map, obj w/ subject
                     self.dict_to_graph(v,key=k,subject=object,map=map.get(k,{'map':{}})['map'], g=g), # subject changed, map changed
                 else:
                     obj = map.get(key,{'rdf': lambda x: URIRef(x) if str(x).startswith("http://") else Literal(x)})['rdf'](v)
-                    g.add((subject, URIRef(map.get(k, {'label':k})['label']), obj)) # same subject,
+                    g.add((subject, URIRef(map.get(k, {'label':str(subject)+"@"+k})['label']), obj)) # same subject,
         else:
             # note: if simple type then add to graph
-            prop = URIRef(map.get(key, {'label': str(key)})['label']) # same subject, map
+            prop = URIRef(map.get(key, {'label': str(subject)+"@"+str(key)})['label']) # same subject, map
             obj = map.get(key,{'rdf': lambda x: URIRef(x) if str(x).startswith("http://") else Literal(x)})['rdf'](val)
             g.add((subject, prop, obj))
         return g
@@ -174,5 +174,5 @@ class RDATools:
         node = self.marmotta.ldp("service")
         g = Graph(identifier=node)
         g.add((node, RDF.type, self.ns.Service))
-        g += self.dict_to_graph(node, s_obj.dict(), self.inverted_properties['ServiceFeatures'])
+        self.dict_to_graph(s_obj.dict(), subject=node, map=self.inverted_properties['ServiceFeatures'], g=g)
         return g
