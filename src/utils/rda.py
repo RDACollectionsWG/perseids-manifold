@@ -3,7 +3,7 @@ from rdflib.namespace import DCTERMS, RDF
 from .struct import Struct
 from .url_encoder import encoder
 from .ldp import LDP
-from src.members.models import MemberItem
+from src.members.models import MemberItem, CollectionItemMappingMetadata
 from src.collections.models import *
 from src.service.models import Service
 
@@ -77,16 +77,16 @@ class RDATools:
     def graph_to_dict(self, graph, node, propertiesMap):
         subnodes = set(s for s in graph.subjects() if s != node)
         dct = {}
-        print("STATE: ", subnodes, node)
+        # print("STATE: ", subnodes, node)
         for (prd, obj) in graph.predicate_objects(node):
             if obj in subnodes:
                 key = propertiesMap.get(str(prd),{'label':str(prd)}).get('label')
                 dct.update({key: self.graph_to_dict(graph,obj,propertiesMap.get(str(prd),{'map':{}}).get('map'))})
             elif str(prd) in propertiesMap or propertiesMap == {}:
-                print(str(prd))
+                # print(str(prd))
                 key = propertiesMap.get(str(prd),{'label':str(prd)}).get('label')
                 value = propertiesMap.get(str(prd),{'type':str}).get('type')(obj)
-                #print(key, ": ", obj.n3(), " -> ", value)
+                # print(key, ": ", obj.n3(), " -> ", value)
                 if not key in dct:
                     dct.update({key: value})
                 else:
@@ -130,8 +130,8 @@ class RDATools:
     def graph_to_collection(self, g):
         containers = [self.graph_to_dict(g, sbj, self.properties['CollectionObject']) for sbj in g.subjects(RDF.type, self.ns.Collection)]
         for c in containers:
-            c['capabilities'] = self.graph_to_dict(g, c['capabilities'], self.properties['CollectionCapabilities'])
-            c['properties'] = self.graph_to_dict(g, c['properties'], self.properties['CollectionProperties'])
+            c['capabilities'] = CollectionCapabilities(**c['capabilities'])
+            c['properties'] = CollectionProperties(**c['properties'])
         return [CollectionObject(**c) for c in containers]
 
     '''
@@ -141,14 +141,9 @@ class RDATools:
     '''
     def collection_to_graph(self,c_obj):
         node = self.marmotta.ldp(encoder.encode(c_obj.id))
-        capabilities = self.marmotta.ldp(encoder.encode(c_obj.id)+'#capabilities')
-        properties = self.marmotta.ldp(encoder.encode(c_obj.id)+'#properties')
         g = Graph(identifier=node)
         g.add((node,RDF.type, self.ns.Collection))
-        # todo:
-        g += (self.dict_to_graph(node, c_obj.dict(), self.inverted_properties['CollectionObject']) + \
-              self.dict_to_graph(capabilities, c_obj.capabilities.dict(), self.inverted_properties['CollectionCapabilities']) + \
-              self.dict_to_graph(properties, c_obj.properties.dict(), self.inverted_properties['CollectionProperties']))
+        self.dict_to_graph(c_obj.dict(), subject=node, map=self.inverted_properties['CollectionObject'], g=g)
         return g
 
     def graph_to_member(self,g):
@@ -156,7 +151,7 @@ class RDATools:
         for m in members:
             if m.get('mappings') is not None:
                 # todo: probably allows for false positives
-                m['mappings'] = self.graph_to_dict(g, m['mappings'], self.properties['MemberItemMappings'])
+                m['mappings'] = CollectionItemMappingMetadata(**m['mappings'])
         return [MemberItem(**m) for m in members]
 
     def member_to_graph(self, c_id, m_obj):
@@ -164,10 +159,7 @@ class RDATools:
         node = self.marmotta.ldp(encoder.encode(c_id)+"/member/"+encoder.encode(m_obj.id))
         g = Graph(identifier=node)
         g.add((node, RDF.type, self.ns.Member))
-        g += self.dict_to_graph(node, m_dict, self.inverted_properties['MemberItem'])
-        if m_dict.get('mappings') is not None:
-            mappings = self.marmotta.ldp(encoder.encode(c_id)+"/member/"+encoder.encode(m_obj.id)+"#mappings")
-            g+=self.dict_to_graph(mappings, m_dict.get('mappings'), self.inverted_properties['MemberItemMappings'])
+        self.dict_to_graph(m_dict, subject=node, map=self.inverted_properties['MemberItem'], g=g)
         return g
 
     def graph_to_service(self, g):
