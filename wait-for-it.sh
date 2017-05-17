@@ -31,7 +31,6 @@ wait_for()
     do
         curl $HOST >/dev/null 2>&1
         result=$?
-        echo $result
         if [[ $result -eq 0 ]]; then
             end_ts=$(date +%s)
             echoerr "$cmdname: $HOST is available after $((end_ts - start_ts)) seconds"

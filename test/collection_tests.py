@@ -63,15 +63,11 @@ class CollectionTest(TestCase):
     def test_collection_post(self):
         with self.app.app_context():
             c_dicts = [self.mock.collection().__dict__ for i in range(5)]
-            for d in c_dicts:
-                del d['id']
             with self.app.test_client() as c:
                 results = [{'out': c.post("/collections", data=json.dumps(col), content_type='application/json', follow_redirects=True), 'in': col} for col in c_dicts]
             for r in results:
                 self.assertEqual(r['out'].status_code, 201)
                 r_dict = json.loads(r['out'].data).__dict__
-                self.assertIsInstance(r_dict['id'], str)
-                del r_dict['id']
                 self.assertEqual(json.dumps(r_dict), json.dumps(r['in']))
 
     def test_collection_delete_id(self):
@@ -113,4 +109,3 @@ class CollectionTest(TestCase):
             with self.app.test_client() as c:
                 response = c.put("/collections/"+urllib.parse.quote_plus(c_obj.id), data=json.dumps(c_obj), content_type="application/json", follow_redirects=True)
                 self.assertEqual(response.status_code, 404)
-

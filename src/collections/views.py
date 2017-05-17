@@ -4,6 +4,7 @@ from src.collections.models import CollectionResultSet, CollectionObject
 from src.members.models import MemberResultSet, MemberItem
 from src.utils.errors import *
 from src.utils.models import Model
+import traceback
 
 def dict_subset(dict1, dict2):
     for key, value in dict1.items():
@@ -17,16 +18,19 @@ def dict_subset(dict1, dict2):
     return True
 
 class CollectionsView(MethodView):
-    def get(self, id:None):
+    def get(self, id=None):
         if id:
             try:
                 collections = current_app.db.get_collection(id)
                 result = collections[0]
             except KeyError:
+                print(traceback.format_exc())
                 raise NotFoundError()
             except FileNotFoundError:
+                print(traceback.format_exc())
                 raise NotFoundError()
             except:
+                print(traceback.format_exc())
                 raise ParseError()
         else:
             try:
@@ -42,23 +46,29 @@ class CollectionsView(MethodView):
                     collections = [c for c in collections if c.properties.ownership == ownership]
                 result = CollectionResultSet(collections)
             except:
+                print(traceback.format_exc())
                 raise ParseError()
         return jsonify(result), 200
 
-    def post(self, id:None):
+    def post(self, id=None):
         if not id:
             try:
-                id = current_app.db.get_id(CollectionObject)
-                current_app.db.set_collection(CollectionObject(id=id, **json.loads(request.data)))
-                return jsonify(current_app.db.get_collection(id)[0]), 201
+                obj = json.loads(request.data)
+                if not isinstance(obj, Model):
+                    if current_app.db.get_service().providesCollectionPids:
+                        obj += {'id': current_app.db.get_id(CollectionObject)}
+                        obj = CollectionObject(**obj)
+                current_app.db.set_collection(obj)
+                return jsonify(current_app.db.get_collection(obj.id).pop()), 201
             except PermissionError:
                 raise UnauthorizedError()  # 401
             except:
+                print(traceback.format_exc())
                 raise ParseError()  # 400
         else:
             raise NotFoundError()  # 404
 
-    def put(self, id:None):
+    def put(self, id=None):
         if id:
             try:
                 c_obj = json.loads(request.data)
@@ -73,11 +83,12 @@ class CollectionsView(MethodView):
             except ForbiddenError:
                 raise ForbiddenError()  # 403
             except:
+                print(traceback.format_exc())
                 raise ParseError()  # 400
         else:
             raise NotFoundError()
 
-    def delete(self, id:None):
+    def delete(self, id=None):
         if id:
             try:
                 current_app.db.del_collection(id)
@@ -100,6 +111,7 @@ class CapabilitiesView(MethodView):
             except KeyError:
                 raise NotFoundError()
             except:
+                print(traceback.format_exc())
                 raise UnauthorizedError()
         else:
             raise NotFoundError()
@@ -192,10 +204,10 @@ class FlattenView(MethodView):
 
 class RedirectView(MethodView):
 
-    def get(self, id:None):
+    def get(self, id=None):
         return redirect(request.url[:-1], code=307)
 
-    def post(self, id:None):
+    def post(self, id=None):
         return redirect(request.url[:-1], code=307)
 
 
