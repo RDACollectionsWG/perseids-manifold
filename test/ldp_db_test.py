@@ -26,6 +26,9 @@ class DbTests(TestCase):
     #def test_ldp_b64encode(self):
      #   self.assertEqual(self.db.b64encode(self.server),"aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ==")
 
+    def tearDown(self):
+        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
+
     #def test_ldp_b64decode(self):
     #    self.assertEqual(self.db.b64decode("aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ=="),self.server)
 
