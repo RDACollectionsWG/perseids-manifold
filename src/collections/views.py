@@ -24,13 +24,13 @@ class CollectionsView(MethodView):
                 collections = current_app.db.get_collection(id)
                 result = collections[0]
             except KeyError:
-                print(traceback.format_exc())
+                #print(traceback.format_exc())
                 raise NotFoundError()
             except FileNotFoundError:
-                print(traceback.format_exc())
+                #print(traceback.format_exc())
                 raise NotFoundError()
             except:
-                print(traceback.format_exc())
+                #print(traceback.format_exc())
                 raise ParseError()
         else:
             try:
@@ -46,7 +46,7 @@ class CollectionsView(MethodView):
                     collections = [c for c in collections if c.properties.ownership == ownership]
                 result = CollectionResultSet(collections)
             except:
-                print(traceback.format_exc())
+                #print(traceback.format_exc())
                 raise ParseError()
         return jsonify(result), 200
 
@@ -63,7 +63,7 @@ class CollectionsView(MethodView):
             except PermissionError:
                 raise UnauthorizedError()  # 401
             except:
-                print(traceback.format_exc())
+                #print(traceback.format_exc())
                 raise ParseError()  # 400
         else:
             raise NotFoundError()  # 404
@@ -83,7 +83,7 @@ class CollectionsView(MethodView):
             except ForbiddenError:
                 raise ForbiddenError()  # 403
             except:
-                print(traceback.format_exc())
+                #print(traceback.format_exc())
                 raise ParseError()  # 400
         else:
             raise NotFoundError()
@@ -111,7 +111,7 @@ class CapabilitiesView(MethodView):
             except KeyError:
                 raise NotFoundError()
             except:
-                print(traceback.format_exc())
+                #print(traceback.format_exc())
                 raise UnauthorizedError()
         else:
             raise NotFoundError()
