@@ -6,12 +6,10 @@ from src.members.models import *
 from src.service.models import *
 from src.utils.url_encoder import encoder
 from src.utils.ldp import LDP as ldp
-from src.utils.rda import RDATools
-from src.utils.marmotta import Marmotta
+from src.utils.rda import RDA
 from run import app
 
 LDP = ldp.ns
-RDA = RDATools(Marmotta("")).ns
 
 class RandomGenerator:
 
@@ -107,53 +105,67 @@ class RandomGenerator:
         }
         """
 
-    def graph_collection(self, ldp_root):
-        obj = self.collection()
+    def graph_collection(self, ldp_root, obj=None):
+        if not obj:
+            obj = self.collection()
         node = URIRef(ldp_root+encoder.encode(obj.id))
         capabilities = URIRef(node+"#capabilities")
         properties = URIRef(node+"#properties")
+        description = URIRef(node+"#description")
 
         g = Graph(identifier=node)
         g.add((node, RDF.type, RDA.Collection))
         g.add((node, DCTERMS.identifier, Literal(obj.id)))
         g.add((node, RDA.hasCapabilities, capabilities))
         g.add((node, RDA.hasProperties, properties))
-        g.add((node, DCTERMS.description, Literal(obj.description)))
+        g.add((node, DCTERMS.description, description))
         g.add((capabilities, RDA.isOrdered, Literal(obj.capabilities.isOrdered)))
         g.add((capabilities, RDA.appendsToEnd, Literal(obj.capabilities.appendsToEnd)))
         g.add((capabilities, RDA.maxLength, Literal(obj.capabilities.maxLength)))
-        g.add((capabilities, RDA.memberShipIsMutable, Literal(obj.capabilities.membershipIsMutable)))
+        g.add((capabilities, RDA.membershipIsMutable, Literal(obj.capabilities.membershipIsMutable)))
         g.add((capabilities, RDA.metadataIsMutable, Literal(obj.capabilities.metadataIsMutable)))
         g.add((capabilities, RDA.restrictedToType, Literal(obj.capabilities.restrictedToType)))
         g.add((capabilities, RDA.supportsRoles, Literal(obj.capabilities.supportsRoles)))
+        g.add((properties, RDA.memberOf, RDF.nil))
         g.add((properties, RDA.modelType, Literal(obj.properties.modelType)))
         g.add((properties, RDA.descriptionOntology, Literal(obj.properties.descriptionOntology)))
         g.add((properties, DCTERMS.license, Literal(obj.properties.license)))
         g.add((properties, DCTERMS.rightsHolder, Literal(obj.properties.ownership)))
         g.add((properties, RDA.hasAccessRestrictions, Literal(obj.properties.hasAccessRestrictions)))
+        g.add((description, URIRef(description+"@something"), Literal(obj.description['something'])))
         return g
 
-    def graph_member(self, c_id, ldp_root):
-        obj = self.member()
+    def graph_member(self, ldp_root, c_id, obj=None):
+        if not obj:
+            obj = self.member()
         node = URIRef(ldp_root+encoder.encode(c_id)+"/member/"+encoder.encode(obj.id))
         mappings = URIRef(node+"#mappings")
 
         g = Graph(identifier=node)
+        g.add((node, RDF.type, RDA.Member))
         g.add((node, DCTERMS.identifier, Literal(obj.id)))
         g.add((node, RDA.location, Literal(obj.location)))
-        g.add((node, RDA.datatype, Literal(obj.datatype)))
-        g.add((node, RDA.ontology, Literal(obj.ontology)))
-        g.add((node, RDA.mappings, mappings))
-        g.add((mappings, RDA.role, Literal(obj.mappings.role)))
-        g.add((mappings, RDA.index, Literal(obj.mappings.index)))
-        g.add((mappings, RDA.dateAdded, Literal(obj.mappings.dateAdded)))
+        if hasattr(obj, 'datatype'):
+            g.add((node, RDA.datatype, Literal(obj.datatype)))
+        if hasattr(obj, 'ontology'):
+            g.add((node, RDA.ontology, Literal(obj.ontology)))
+        if hasattr(obj, 'mappings'):
+            g.add((node, RDA.mappings, mappings))
+            if hasattr(obj, 'mappings.role'):
+                g.add((mappings, RDA.role, Literal(obj.mappings.role)))
+            if hasattr(obj, 'mappings.index'):
+                g.add((mappings, RDA.index, Literal(obj.mappings.index)))
+            if hasattr(obj, 'mappings.dateAdded'):
+                g.add((mappings, RDA.dateAdded, Literal(obj.mappings.dateAdded)))
         return g
         
-    def graph_service(self, ldp_root):
-        obj = self.service()
+    def graph_service(self, ldp_root, obj=None):
+        if not obj:
+            obj = self.service()
         node = URIRef(ldp_root+"service")
         
         g = Graph(identifier=node)
+        g.add((node, RDF.type, RDA.Service))
         g.add((node, RDA.providesCollectionPids, Literal(obj.providesCollectionPids)))
         g.add((node, RDA.collectionPidProviderType, Literal(obj.collectionPidProviderType)))
         g.add((node, RDA.enforcesAccess, Literal(obj.enforcesAccess)))
@@ -163,9 +175,13 @@ class RandomGenerator:
         g.add((node, RDA.maxExpansionDepth, Literal(obj.maxExpansionDepth)))
         g.add((node, RDA.providesVersioning, Literal(obj.providesVersioning)))
         for sco in obj.supportedCollectionOperations:
-            g.add((node, RDA.supportedCollectionOperations, Literal(obj.supportedCollectionOperations)))
+            g.add((node, RDA.supportedCollectionOperations, Literal(sco)))
+        if len(obj.supportedCollectionOperations) is 0:
+            g.add((node, RDA.supportedCollectionOperations, RDF.nil))
         for smt in obj.supportedModelTypes:
-            g.add((node, RDA.supportedModelTypes, Literal(obj.supportedModelTypes)))
+            g.add((node, RDA.supportedModelTypes, Literal(smt)))
+        if len(obj.supportedModelTypes) is 0:
+            g.add((node, RDA.supportedModelTypes, RDF.nil))
         return g
 
     #def result(self):
