@@ -132,7 +132,10 @@ class RDATools:
         return g
 
     def graph_to_collection(self, g):
-        containers = [self.graph_to_dict(g, sbj, self.properties['CollectionObject']) for sbj in g.subjects(RDF.type, self.ns.Collection)]
+        subjects = [s for s in g.subjects(RDF.type, self.ns.Collection)]
+        for sbj in subjects:
+            g.remove((sbj,RDF.type,self.ns.Collection))
+        containers = [self.graph_to_dict(g, sbj, self.properties['CollectionObject']) for sbj in subjects]
         for c in containers:
             c['capabilities'] = CollectionCapabilities(**c['capabilities'])
             c['properties'] = CollectionProperties(**c['properties'])
@@ -151,7 +154,10 @@ class RDATools:
         return g
 
     def graph_to_member(self,g):
-        members = [self.graph_to_dict(g, sbj, self.properties['MemberItem']) for sbj in g.subjects(RDF.type, self.ns.Member)]
+        subjects = [s for s in g.subjects(RDF.type, self.ns.Member)]
+        for sbj in subjects:
+            g.remove((sbj,RDF.type,self.ns.Member))
+        members = [self.graph_to_dict(g, sbj, self.properties['MemberItem']) for sbj in subjects]
         for m in members:
             if m.get('mappings') is not None:
                 # todo: probably allows for false positives
@@ -167,7 +173,10 @@ class RDATools:
         return g
 
     def graph_to_service(self, g):
-        services = [sbj for sbj in g.subjects(RDF.type, self.ns.Service)]
+        subjects = [s for s in g.subjects(RDF.type, self.ns.Service)]
+        for sbj in subjects:
+            g.remove((sbj,RDF.type,self.ns.Service))
+        services = [sbj for sbj in subjects]
         if len(services) is 1:
             service = services.pop()
             return Service(**self.graph_to_dict(g, service, self.properties['ServiceFeatures']))
