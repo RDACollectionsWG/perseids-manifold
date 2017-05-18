@@ -9,6 +9,8 @@ from src.service.models import Service
 
 boolean = lambda x: True if str(x)=='true' else False
 
+RDA = Namespace("http://rd-alliance.org/ns/collections#")
+
 def invert(dct):
     return {v['label']: {'label':k, 'type':v['type'], 'rdf': v['rdf'], 'map':invert(v['map'])} for k,v in dct.items() if not k.startswith("__")}
 
@@ -16,7 +18,7 @@ class RDATools:
 
     def __init__(self, marmotta):
         self.marmotta = marmotta
-        self.ns = Namespace("http://rd-alliance.org/ns/collections#")
+        self.ns = RDA
         # todo: consider merging everything into a single k-v-store?
         # todo: for that we would need to find alternative to iterating over maps in graph_to_dict()
         self.properties = {
