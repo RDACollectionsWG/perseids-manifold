@@ -79,16 +79,16 @@ class RDATools:
     def graph_to_dict(self, graph, node, propertiesMap):
         subnodes = set(s for s in graph.subjects() if s != node)
         dct = {}
-        # print("STATE: ", subnodes, node)
         for (prd, obj) in graph.predicate_objects(node):
             if obj in subnodes:
                 key = propertiesMap.get(str(prd),{'label':str(prd).replace(str(node)+"@","")}).get('label')
                 dct.update({key: self.graph_to_dict(graph,obj,propertiesMap.get(str(prd),{'map':{}}).get('map'))})
+            elif obj == RDF.nil:
+                key = propertiesMap.get(str(prd),{'label':str(prd).replace(str(node)+"@","")}).get('label')
+                dct.update({key: []})
             elif str(prd) in propertiesMap or propertiesMap == {}:
-                # print(str(prd))
                 key = propertiesMap.get(str(prd),{'label':str(prd).replace(str(node)+"@","")}).get('label')
                 value = propertiesMap.get(str(prd),{'type':str}).get('type')(obj)
-                # print(key, ": ", obj.n3(), " -> ", value)
                 if not key in dct:
                     dct.update({key: value})
                 else:
@@ -109,6 +109,8 @@ class RDATools:
             # note: if List then add items
             for item in val:
                 self.dict_to_graph(item, key=key, subject=subject, map=map, g=g)
+            if len(val) is 0:
+                g.add((subject,URIRef(map.get(key, {'label': str(subject)+"@"+str(key)})['label']), RDF.nil))
         elif isinstance(val, dict):
             if not subject:
                 subject = g.identifier
