@@ -1,16 +1,20 @@
-import base64, random, string
+import random
+import string
+
 import requests
 from rdflib import Dataset, Variable
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
-from .db import DBInterface
+
 from src.collections.models import *
 from src.members.models import *
 from src.service.models import Service
-from src.utils.ldp import LDP
-from src.utils.sparql import SPARQLTools
-from src.utils.marmotta import Marmotta
-from src.utils.url_encoder import encoder
-from src.utils.rda import RDATools
+from src.utils.conversions.rda import RDATools
+from src.utils.ids.marmotta import Marmotta
+from src.utils.ids.url_encoder import encoder
+from src.utils.rdf.ldp import LDP
+from src.utils.rdf.sparql import SPARQLTools
+from .db import DBInterface
+
 
 class LDPDataBase(DBInterface):
 

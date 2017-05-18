@@ -1,7 +1,9 @@
 import unittest
+
 from rdflib.namespace import RDF
-from src.utils.rda import RDATools
-from src.utils.marmotta import Marmotta
+
+from src.utils.conversions.rda import RDATools
+from src.utils.ids.marmotta import Marmotta
 from test.mock import RandomGenerator
 
 

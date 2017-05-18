@@ -1,5 +1,7 @@
 from rdflib import URIRef, Dataset, Variable
-from .struct import Struct
+
+from src.utils.base.struct import Struct
+
 
 # todo: the queries could be consolidated into a single set with a few more parameters
 # todo: it's cleaner architecture but more complex interface - do it anyways?

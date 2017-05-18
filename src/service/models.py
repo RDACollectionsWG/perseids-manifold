@@ -1,7 +1,7 @@
-from functools import reduce
 from enum import Enum
-from ..utils.models import Model
-from ..utils.errors import ModelError
+
+from src.utils.base.errors import ModelError
+from src.utils.base.models import Model
 
 
 class Operations(Enum):

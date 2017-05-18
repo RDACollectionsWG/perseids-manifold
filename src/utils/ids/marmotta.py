@@ -1,5 +1,7 @@
 from rdflib import Namespace
-from src.utils.struct import Struct
+
+from src.utils.base.struct import Struct
+
 
 class Marmotta:
 

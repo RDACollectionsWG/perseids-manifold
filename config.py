@@ -1,5 +1,7 @@
-from src.data.filesystem_db import FilesystemDB
-from src.data.ldp_db import LDPDataBase
+from src.utils.data.ldp_db import LDPDataBase
+
+from src.utils.data.filesystem_db import FilesystemDB
+
 
 class Config(object):
     RDA_API_DB = LDPDataBase

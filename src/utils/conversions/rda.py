@@ -1,11 +1,10 @@
 from rdflib import Literal, URIRef, Namespace, Graph
 from rdflib.namespace import DCTERMS, RDF
-from .struct import Struct
-from .url_encoder import encoder
-from .ldp import LDP
-from src.members.models import MemberItem, CollectionItemMappingMetadata
+
 from src.collections.models import *
+from src.members.models import MemberItem, CollectionItemMappingMetadata
 from src.service.models import Service
+from src.utils.ids.url_encoder import encoder
 
 boolean = lambda x: True if str(x)=='true' else False
 

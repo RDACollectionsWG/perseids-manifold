@@ -1,5 +1,7 @@
 from flask import Flask
-from src.data.null_db import NullDB
+
+from src.utils.data.null_db import NullDB
+
 
 class CollectionsAPI(Flask):
 
