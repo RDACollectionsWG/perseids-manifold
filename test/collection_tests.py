@@ -54,7 +54,7 @@ class CollectionTest(TestCase):
             loaded = [json.loads(r.data) for r in response]
             for r in response:
                 self.assertEqual(r.status_code, 200)
-            self.assertListEqual([json.dumps(c) for c in sorted([c_obj for resultset in loaded for c_obj in resultset['contents']], key=lambda x: x.id)], [json.dumps(c) for c in sorted(c_objs, key=lambda x: x.id)])
+            self.assertListEqual([json.dumps(c) for c in sorted(loaded, key=lambda x: x.id)], [json.dumps(c) for c in sorted(c_objs, key=lambda x: x.id)])
 
     def test_collection_get_unknown_id(self):
         response = self.get("/collections/ubifdnoi3hrfiu")
@@ -93,7 +93,7 @@ class CollectionTest(TestCase):
             c_objs = [self.mock.collection() for i in range(5)]
             for c in c_objs:
                 self.app.db.set_collection(c)
-                c.description = c.description+"changed"
+                c.description.update({"added_description":"changed"})
             with self.app.test_client() as c:
                 for col in c_objs:
                     response = c.put("/collections/"+urllib.parse.quote_plus(col.id), data=json.dumps(col), content_type="application/json", follow_redirects=True)
@@ -101,7 +101,7 @@ class CollectionTest(TestCase):
                     self.assertEqual(json.dumps(json.loads(response.data)), json.dumps(col))
                     response = self.get("/collections/"+urllib.parse.quote_plus(col.id))
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(json.dumps(json.loads(response.data)['contents'][0]), json.dumps(col))
+                    self.assertEqual(json.dumps(json.loads(response.data)), json.dumps(col))
 
     def test_collection_put_unknown_id(self):
         with self.app.app_context():

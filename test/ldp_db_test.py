@@ -18,13 +18,18 @@ class DbTests(TestCase):
         print("\n// Test LDP DB ------------------")
 
     def setUp(self):
-        self.server = os.environ.get('COLLECTIONS_API_TEST_DB','http://localhost:8080/marmotta')
+        self.server = os.environ.get('COLLECTIONS_API_TEST_DB')
+        if not self.server:
+            raise EnvironmentError
         self.db = LDPDataBase(self.server)
         requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
         self.mock = RandomGenerator()
 
     #def test_ldp_b64encode(self):
      #   self.assertEqual(self.db.b64encode(self.server),"aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ==")
+
+    def tearDown(self):
+        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
 
     #def test_ldp_b64decode(self):
     #    self.assertEqual(self.db.b64decode("aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ=="),self.server)

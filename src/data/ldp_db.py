@@ -94,7 +94,7 @@ class LDPDataBase(DBInterface):
         c_id = self.marmotta.ldp(encoder.encode(cid))
         m_id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m_obj.id))
         found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(c_id), headers={"Accept":"application/sparql-results+json"}).json()).askAnswer
-        if found:
+        if not found:
             raise KeyError
         ds = Dataset()
         member = ds.graph(identifier=m_id)
