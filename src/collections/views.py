@@ -136,6 +136,8 @@ class FindMatchView(MethodView):
     def post(self, id):
         if id:
             try:
+                if 'findMatch' not in app.service.supportedCollectionOperations:
+                    raise KeyError
                 if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
                     raise PermissionError
                 posted = json.loads(request.data)
@@ -157,6 +159,8 @@ class IntersectionView(MethodView):
     def get(self, id, other_id):
         if id and other_id:
             try:
+                if 'intersection' not in app.service.supportedCollectionOperations:
+                    raise KeyError
                 if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
                     raise PermissionError
                 if (id == other_id):
@@ -178,6 +182,8 @@ class UnionView(MethodView):
     def get(self, id, other_id):
         if id and other_id:
             try:
+                if 'union' not in app.service.supportedCollectionOperations:
+                    raise KeyError
                 if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
                     raise PermissionError
                 if (id == other_id):
@@ -213,6 +219,8 @@ class FlattenView(MethodView):
     def get(self, id):
         if id:
             try:
+                if 'flatten' not in app.service.supportedCollectionOperations:
+                    raise KeyError
                 members = self.flatten([self.recurse(m, -1) for m in app.db.get_member(id)])
                 if app.service.enforcesAccess:
                     if not app.acl.get_permission(app.acl.get_user(),id).r:
