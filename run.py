@@ -21,7 +21,7 @@ app.config.from_object({
 if os.environ.get('COLLECTIONS_API_SETTINGS'):
     app.config.from_envvar('COLLECTIONS_API_SETTINGS')
 
-app.initialize(app.config.get('RDA_API_DB')(app.config.get('RDA_API_LOCATION')))
+app.initialize(app.config)
 
 CORS(app)
 app.json_encoder = RDAJSONEncoder
