@@ -65,7 +65,7 @@ class CollectionsView(MethodView):
                 obj = json.loads(request.data)
                 if not isinstance(obj, Model):
                     if app.db.get_service().providesCollectionPids:
-                        obj += {'id': app.db.get_id(CollectionObject)}
+                        obj += {'id': app.mint.get_id(CollectionObject)}
                         obj = CollectionObject(**obj)
                 app.db.set_collection(obj)
                 return jsonify(app.db.get_collection(obj.id).pop()), 201

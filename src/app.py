@@ -2,6 +2,7 @@ from flask import Flask
 
 from src.utils.data.null_db import NullDB
 from src.utils.access.null_control import NullACL
+from src.utils.ids.mint import NullGenerator
 
 
 class CollectionsAPI(Flask):
@@ -10,6 +11,7 @@ class CollectionsAPI(Flask):
         super(CollectionsAPI, self).__init__(name)
         self.db = NullDB()
         self.acl = NullACL()
+        self.mint = NullGenerator()
 
     def initialize(self, config):
         if config.get('RDA_API_DB') and config.get('RDA_API_LOCATION'):
