@@ -1,10 +1,11 @@
-
 from enum import Enum
+
 from flask.json import JSONEncoder, JSONDecoder
-from .models import Model
-from ..service.models import classList as m_service
-from ..collections.models import classList as m_collections
-from ..members.models import classList as m_members
+
+from src.collections.models import classList as m_collections
+from src.members.models import classList as m_members
+from src.service.models import classList as m_service
+from src.utils.base.models import Model
 
 models = m_service + m_collections + m_members
 

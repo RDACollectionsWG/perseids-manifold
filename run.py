@@ -1,13 +1,15 @@
 import os
-from src.app import CollectionsAPI
-from config import Config, FilesystemDBConfig, ComposeConfig
+
 from flask import send_from_directory
+from flask_cors import CORS
+
+from config import Config, FilesystemDBConfig, ComposeConfig
+from src.app import CollectionsAPI
 from src.collections.routes import routes as r_collections
 from src.members.routes import routes as r_members
 from src.service.routes import routes as r_service
-from src.utils.errors import activate
-from src.utils.json import *
-from flask_cors import CORS, cross_origin
+from src.utils.base.errors import activate
+from src.utils.conversions.json import *
 
 app = CollectionsAPI(__name__)
 
@@ -19,7 +21,7 @@ app.config.from_object({
 if os.environ.get('COLLECTIONS_API_SETTINGS'):
     app.config.from_envvar('COLLECTIONS_API_SETTINGS')
 
-app.initialize(app.config.get('RDA_API_DB')(app.config.get('RDA_API_LOCATION')))
+app.initialize(app.config)
 
 CORS(app)
 app.json_encoder = RDAJSONEncoder

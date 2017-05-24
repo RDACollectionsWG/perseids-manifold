@@ -1,13 +1,16 @@
-import random, string
-from rdflib import URIRef, Literal, Variable, Graph
+import random
+import string
+
+from rdflib import URIRef, Literal, Graph
 from rdflib.namespace import RDF, DCTERMS
+
+from run import app
 from src.collections.models import *
 from src.members.models import *
 from src.service.models import *
-from src.utils.url_encoder import encoder
-from src.utils.ldp import LDP as ldp
-from src.utils.rda import RDA
-from run import app
+from src.utils.conversions.rda import RDA
+from src.utils.ids.url_encoder import encoder
+from src.utils.rdf.ldp import LDP as ldp
 
 LDP = ldp.ns
 

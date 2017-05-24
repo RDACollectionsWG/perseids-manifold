@@ -1,11 +1,13 @@
-from src.data.filesystem_db import FilesystemDB
-from unittest import TestCase, main
-from flask import json
-from tempfile import TemporaryDirectory, mkdtemp
-from random import randint
-from run import app
-from .mock import RandomGenerator
 import os
+from random import randint
+from tempfile import TemporaryDirectory
+from unittest import TestCase, main
+
+from flask import json
+
+from run import app
+from src.utils.data.filesystem_db import FilesystemDB
+from .mock import RandomGenerator
 
 
 class DbTests(TestCase):
