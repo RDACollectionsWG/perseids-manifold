@@ -6,7 +6,7 @@ from flask import json
 
 from run import app
 from src.utils.data.filesystem_db import FilesystemDB
-from .mock import RandomGenerator
+from test.mock import RandomGenerator
 
 
 class MembersTest(TestCase):
