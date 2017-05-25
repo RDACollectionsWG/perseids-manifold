@@ -1,10 +1,13 @@
-from unittest import TestCase
-from .mock import RandomGenerator
-from run import app
-from src.data.filesystem_db import FilesystemDB
-from tempfile import TemporaryDirectory, mkdtemp
 import urllib
+from tempfile import TemporaryDirectory
+from unittest import TestCase
+
 from flask import json
+
+from run import app
+from src.utils.data.filesystem_db import FilesystemDB
+from test.mock import RandomGenerator
+
 
 class MembersTest(TestCase):
 

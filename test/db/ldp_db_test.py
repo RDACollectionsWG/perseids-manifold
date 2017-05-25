@@ -1,14 +1,17 @@
+import os
+from random import randint
+from unittest import TestCase, main
+
+import requests
+from flask import json
 from rdflib import Dataset
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
-from src.data.ldp_db import LDPDataBase
-from src.utils.queries import reset_marmotta
-from src.utils.url_encoder import encoder
-from unittest import TestCase, main
-from flask import json
-from random import randint
+
 from run import app
-from .mock import RandomGenerator
-import os, requests
+from src.utils.data.ldp_db import LDPDataBase
+from src.utils.ids.url_encoder import encoder
+from src.utils.rdf.queries import reset_marmotta
+from test.mock import RandomGenerator
 
 
 class DbTests(TestCase):

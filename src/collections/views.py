@@ -1,10 +1,11 @@
-from flask import request, json, current_app, redirect
+from flask import request, json, redirect, current_app as app
 from flask.views import MethodView
+from src.utils.base.models import Model
+
 from src.collections.models import CollectionResultSet, CollectionObject
 from src.members.models import MemberResultSet, MemberItem
-from src.utils.errors import *
-from src.utils.models import Model
-import traceback
+from src.utils.base.errors import *
+
 
 def dict_subset(dict1, dict2):
     for key, value in dict1.items():
@@ -19,9 +20,13 @@ def dict_subset(dict1, dict2):
 
 class CollectionsView(MethodView):
     def get(self, id=None):
+        # todo: pagination
+        # todo: maxExp
         if id:
             try:
-                collections = current_app.db.get_collection(id)
+                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
+                    raise PermissionError
+                collections = app.db.get_collection(id)
                 result = collections[0]
             except KeyError:
                 #print(traceback.format_exc())
@@ -37,7 +42,9 @@ class CollectionsView(MethodView):
                 model_type = request.args.get("f_modelType")
                 member_type = request.args.get("f_memberType")
                 ownership = request.args.get("f_ownership")
-                collections = current_app.db.get_collection()
+                collections = app.db.get_collection()
+                if app.service.enforcesAccess:
+                    collections = [c for c in collections if app.acl.get_permission(app.acl.get_user(), c.id).r]
                 if model_type:
                     collections = [c for c in collections if c.properties.modelType == model_type]
                 if member_type:
@@ -53,13 +60,15 @@ class CollectionsView(MethodView):
     def post(self, id=None):
         if not id:
             try:
+                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user()).x:
+                    raise PermissionError
                 obj = json.loads(request.data)
                 if not isinstance(obj, Model):
-                    if current_app.db.get_service().providesCollectionPids:
-                        obj += {'id': current_app.db.get_id(CollectionObject)}
+                    if app.db.get_service().providesCollectionPids:
+                        obj += {'id': app.mint.get_id(CollectionObject)}
                         obj = CollectionObject(**obj)
-                current_app.db.set_collection(obj)
-                return jsonify(current_app.db.get_collection(obj.id).pop()), 201
+                app.db.set_collection(obj)
+                return jsonify(app.db.get_collection(obj.id).pop()), 201
             except PermissionError:
                 raise UnauthorizedError()  # 401
             except:
@@ -71,11 +80,13 @@ class CollectionsView(MethodView):
     def put(self, id=None):
         if id:
             try:
+                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).w:
+                    raise PermissionError
                 c_obj = json.loads(request.data)
                 if c_obj.id != id:
                     raise ParseError()
-                current_app.db.get_collection(id)
-                return jsonify(current_app.db.set_collection(c_obj)), 200
+                app.db.get_collection(id)
+                return jsonify(app.db.set_collection(c_obj)), 200
             except (KeyError, FileNotFoundError):
                 raise NotFoundError()  # 404
             except UnauthorizedError:
@@ -91,7 +102,9 @@ class CollectionsView(MethodView):
     def delete(self, id=None):
         if id:
             try:
-                current_app.db.del_collection(id)
+                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).x:
+                    raise PermissionError
+                app.db.del_collection(id)
                 return jsonify(''), 200
             except KeyError:
                 raise NotFoundError()
@@ -107,7 +120,9 @@ class CapabilitiesView(MethodView):
     def get(self, id):
         if id:
             try:
-                return jsonify(current_app.db.get_collection(id)[0].capabilities), 200
+                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
+                    raise PermissionError
+                return jsonify(app.db.get_collection(id)[0].capabilities), 200
             except KeyError:
                 raise NotFoundError()
             except:
@@ -121,12 +136,16 @@ class FindMatchView(MethodView):
     def post(self, id):
         if id:
             try:
+                if 'findMatch' not in app.service.supportedCollectionOperations:
+                    raise KeyError
+                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
+                    raise PermissionError
                 posted = json.loads(request.data)
                 if isinstance(posted, Model):
                     posted = posted.dict()
                 if isinstance(posted.get('mappings'), Model):
                     posted['mappings'] = posted.get('mappings').dict()
-                members = [m for m in current_app.db.get_member(id) if dict_subset(posted, m.dict())]
+                members = [m for m in app.db.get_member(id) if dict_subset(posted, m.dict())]
                 return jsonify(MemberResultSet(members)), 200
             except KeyError:
                 raise NotFoundError()
@@ -140,11 +159,15 @@ class IntersectionView(MethodView):
     def get(self, id, other_id):
         if id and other_id:
             try:
+                if 'intersection' not in app.service.supportedCollectionOperations:
+                    raise KeyError
+                if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
+                    raise PermissionError
                 if (id == other_id):
-                    intersection =  current_app.db.get_member(id)
+                    intersection =  app.db.get_member(id)
                 else:
-                    set1 = [m.dict() for m in current_app.db.get_member(id)]
-                    set2 = [m.dict() for m in current_app.db.get_member(other_id)]
+                    set1 = [m.dict() for m in app.db.get_member(id)]
+                    set2 = [m.dict() for m in app.db.get_member(other_id)]
                     intersection = [MemberItem(**m) for m in set1 if m in set2]
                 return jsonify(MemberResultSet(intersection)), 200
             except KeyError:
@@ -159,11 +182,15 @@ class UnionView(MethodView):
     def get(self, id, other_id):
         if id and other_id:
             try:
+                if 'union' not in app.service.supportedCollectionOperations:
+                    raise KeyError
+                if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
+                    raise PermissionError
                 if (id == other_id):
-                    union =  current_app.db.get_member(id)
+                    union =  app.db.get_member(id)
                 else:
-                    set1 = [m.dict() for m in current_app.db.get_member(id)]
-                    set2 = [m.dict() for m in current_app.db.get_member(other_id)]
+                    set1 = [m.dict() for m in app.db.get_member(id)]
+                    set2 = [m.dict() for m in app.db.get_member(other_id)]
                     union = set1 + [m for m in set2 if m not in set1]
                 return jsonify(MemberResultSet([MemberItem(**m) for m in union])), 200
             except KeyError:
@@ -184,7 +211,7 @@ class FlattenView(MethodView):
             return [m_obj]
         else:
             try:
-                m_objs = current_app.db.get_member(m_obj.id)
+                m_objs = app.db.get_member(m_obj.id)
                 return self.flatten([self.recurse(m, depth-1) for m in m_objs])
             except:
                 return [m_obj]
@@ -192,7 +219,14 @@ class FlattenView(MethodView):
     def get(self, id):
         if id:
             try:
-                members = self.flatten([self.recurse(m, -1) for m in current_app.db.get_member(id)])
+                if 'flatten' not in app.service.supportedCollectionOperations:
+                    raise KeyError
+                members = self.flatten([self.recurse(m, -1) for m in app.db.get_member(id)])
+                if app.service.enforcesAccess:
+                    if not app.acl.get_permission(app.acl.get_user(),id).r:
+                        raise PermissionError
+                    else:
+                        members = [m for m in members if app.acl.get_permission(app.acl.get_user(),id,m.id).r]
                 return jsonify(MemberResultSet(members)), 200
             except KeyError:
                 raise NotFoundError()

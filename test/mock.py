@@ -1,13 +1,16 @@
-import random, string
-from rdflib import URIRef, Literal, Variable, Graph
+import random, string, json
+
+from rdflib import URIRef, Literal, Graph
 from rdflib.namespace import RDF, DCTERMS
+from rdflib.plugins.sparql.results.jsonresults import JSONResult
+
+from run import app
 from src.collections.models import *
 from src.members.models import *
 from src.service.models import *
-from src.utils.url_encoder import encoder
-from src.utils.ldp import LDP as ldp
-from src.utils.rda import RDA
-from run import app
+from src.utils.conversions.rda import RDA
+from src.utils.ids.url_encoder import encoder
+from src.utils.rdf.ldp import LDP as ldp
 
 LDP = ldp.ns
 
@@ -77,7 +80,9 @@ class RandomGenerator:
             "memberOf": [],
             "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md"
           },
-          "description": ""
+          "description": {
+            "something": "new"
+          }
         }
         """
 
@@ -187,3 +192,503 @@ class RandomGenerator:
     #def result(self):
      #   graph = self.graph_service("")
       #  g = graph.identifier
+
+    def collection_result(self,obj=None, ldp_root="http://localhost:8080/marmotta/ldp/"):
+        if not obj:
+            obj = self.collection()
+            ldp = ldp_root+encoder.encode(obj.id)
+        return JSONResult(json.loads("""
+{{
+  "head" : {{
+    "vars" : [ "g", "s", "p", "o" ]
+  }},
+  "results" : {{
+    "bindings" : [ {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#Resource"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#RDFSource"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#Container"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#interactionModel"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#Container"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#BasicContainer"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",
+        "type" : "literal",
+        "value" : "2017-05-25T11:18:11.000Z"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://purl.org/dc/terms/created"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",
+        "type" : "literal",
+        "value" : "2017-05-25T11:18:11.000Z"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://purl.org/dc/terms/modified"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp_root}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/ns/ldp#contains"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#Collection"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#hasCapabilities"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#hasProperties"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "{obj.id}"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://purl.org/dc/terms/identifier"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "{ldp}#description"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://purl.org/dc/terms/description"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#Capabilities"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#boolean",
+        "type" : "literal",
+        "value" : "false"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#isOrdered"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#boolean",
+        "type" : "literal",
+        "value" : "false"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#appendsToEnd"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#boolean",
+        "type" : "literal",
+        "value" : "false"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#supportsRoles"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#boolean",
+        "type" : "literal",
+        "value" : "false"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#membershipIsMutable"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#boolean",
+        "type" : "literal",
+        "value" : "false"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#metadataIsMutable"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "literal",
+        "value" : ""
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#restrictedToType"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "-1"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#capabilities"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#maxLength"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#Properties"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "literal",
+        "value" : ""
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#ownership"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "literal",
+        "value" : ""
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://purl.org/dc/terms/license"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "literal",
+        "value" : ""
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#modelType"
+      }}
+    }}, {{
+      "o" : {{
+        "datatype" : "http://www.w3.org/2001/XMLSchema#boolean",
+        "type" : "literal",
+        "value" : "false"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#hasAccessRestrictions"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "uri",
+        "value" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#memberOf"
+      }}
+    }}, {{
+      "o" : {{
+        "type" : "literal",
+        "value" : "{obj.properties.descriptionOntology}"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#descriptionOntology"
+      }}
+    }} ]
+  }}
+}}
+        """.format(obj=obj, ldp=ldp, ldp_root=ldp_root)))

@@ -1,7 +1,9 @@
 import unittest
+
 from rdflib.namespace import RDF
-from src.utils.rda import RDATools
-from src.utils.marmotta import Marmotta
+
+from src.utils.conversions.rda import RDATools
+from src.utils.ids.marmotta import Marmotta
 from test.mock import RandomGenerator
 
 
@@ -72,9 +74,9 @@ class RDATestCase(unittest.TestCase):
         obj2 = self.rda.graph_to_service(g)
         self.assertDictEqual(obj1.dict(),obj2.dict())
 
-    #def test_ldp_add_contains(self):
-    #    assert False
-    #    self.db.ldp_add_contains()
+        #def test_ldp_add_contains(self):
+        #    assert False
+        #    self.db.ldp_add_contains()
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
-from ..utils.models import Model
-from ..utils.errors import ModelError
+from src.utils.base.models import Model
 
 
 class MemberResultSet(Model):

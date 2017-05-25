@@ -7,7 +7,7 @@ from src.collections.models import *
 from src.members.models import *
 from src.service.models import *
 
-from .mock import RandomGenerator
+from test.mock import RandomGenerator
 
 from run import app
 
