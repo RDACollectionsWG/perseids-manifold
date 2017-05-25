@@ -80,7 +80,9 @@ class RandomGenerator:
             "memberOf": [],
             "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md"
           },
-          "description": ""
+          "description": {
+            "something": "new"
+          }
         }
         """
 
