@@ -1,5 +1,4 @@
-import abc, requests, string
-from random import random
+import abc, random, requests, string
 from src.collections.models import CollectionObject
 from src.members.models import MemberItem
 
@@ -18,9 +17,9 @@ class URNGenerator(IDGenerator):
         IDGenerator.__init__(self,template)
 
     def get_id(self, cls):
-        if isinstance(cls, CollectionObject):
+        if cls is CollectionObject:
             return self.template.format("collections",''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))))
-        elif isinstance(cls, MemberItem):
+        elif cls is MemberItem:
             return self.template.format("items",''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))))
         else:
             raise TypeError
@@ -32,8 +31,8 @@ class RemoteGenerator(IDGenerator):
 
     def get_id(self, cls):
 
-        if isinstance(cls, CollectionObject) or isinstance(cls, MemberItem):
-            res = requests.get(self.template.format("collection" if isinstance(cls, CollectionObject) else "member"))
+        if cls is CollectionObject or cls is MemberItem:
+            res = requests.get(self.template.format("collection" if cls is CollectionObject else "member"))
             if res.status_code is 200:
                 return res.content
             else:

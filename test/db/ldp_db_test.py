@@ -11,7 +11,7 @@ from run import app
 from src.utils.data.ldp_db import LDPDataBase
 from src.utils.ids.url_encoder import encoder
 from src.utils.rdf.queries import reset_marmotta
-from .mock import RandomGenerator
+from test.mock import RandomGenerator
 
 
 class DbTests(TestCase):

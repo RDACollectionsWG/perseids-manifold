@@ -7,7 +7,7 @@ from flask import json
 from run import app
 from src.collections.models import CollectionObject
 from src.utils.data.filesystem_db import FilesystemDB
-from .mock import RandomGenerator
+from test.mock import RandomGenerator
 
 
 class CollectionTest(TestCase):
