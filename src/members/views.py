@@ -26,43 +26,37 @@ class MemberView(MethodView):
     def get(self, id, mid=None):
         try:
             if mid:
-                try:
-                    members = current_app.db.get_member(id, mid)
-                    result = members[0]
-                except UnauthorizedError:
-                    raise UnauthorizedError()
+                members = current_app.db.get_member(id, mid)
+                result = members[0]
             else:
-                try:
-                    datatype = request.args.get("f_datetype")
-                    role = request.args.get("f_role")
-                    index = request.args.get("f_index")
-                    date_added = request.args.get("f_dateAdded")
-                    cursor = request.args.get("cursor")
-                    expand_depth = int(request.args.get("expandDepth") or 0)
-                    members = current_app.db.get_member(id)
-                    if expand_depth is not 0:
-                        members = self.flatten([self.recurse(m, expand_depth) for m in members])
-                    if datatype:
-                        members = [m for m in members if m.datatype == datatype]
-                    if role:
-                        members = [m for m in members if hasattr(m,'mappings') and m.mappings.role == role]
-                    if index:
-                        members = [m for m in members if hasattr(m,'mappings') and m.mappings.index == index]
-                    if date_added:
-                        members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
-                    result = MemberResultSet(members)
-                except UnauthorizedError:
-                    raise UnauthorizedError()
-                except:
-                    print(traceback.format_exc())
-                    raise ParseError()
-        except KeyError:
-            print(traceback.format_exc())
-            raise NotFoundError()
-        return jsonify(result), 200
+                datatype = request.args.get("f_datetype")
+                role = request.args.get("f_role")
+                index = request.args.get("f_index")
+                date_added = request.args.get("f_dateAdded")
+                cursor = request.args.get("cursor")
+                expand_depth = int(request.args.get("expandDepth") or 0)
+                members = current_app.db.get_member(id)
+                if expand_depth is not 0:
+                    members = self.flatten([self.recurse(m, expand_depth) for m in members])
+                if datatype:
+                    members = [m for m in members if m.datatype == datatype]
+                if role:
+                    members = [m for m in members if hasattr(m,'mappings') and m.mappings.role == role]
+                if index:
+                    members = [m for m in members if hasattr(m,'mappings') and m.mappings.index == index]
+                if date_added:
+                    members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
+                result = MemberResultSet(members)
+            return jsonify(result), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()
 
     def post(self, id):
         try:
+            if not id:
+                raise NotFoundError()
             obj = json.loads(request.data)
             #if not isinstance(obj, Model):
             #    if current_app.db.get_service().providesCollectionPids:
@@ -70,15 +64,10 @@ class MemberView(MethodView):
             #        obj = MemberItem(**obj)
             current_app.db.set_member(id, obj)
             return jsonify(current_app.db.get_member(id, obj.id)), 201
-        except (KeyError, FileNotFoundError, NotFoundError):
-            raise NotFoundError()
-        except UnauthorizedError:
-            raise UnauthorizedError
-        except ForbiddenError:
-            raise ForbiddenError()
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
         except:
-            print(traceback.format_exc())
-            ParseError()
+            raise ParseError()
 
     def put(self, id, mid):
         try:
@@ -86,32 +75,22 @@ class MemberView(MethodView):
             if posted.id != mid:
                 raise ParseError()
             if len(current_app.db.get_member(id, mid)) is not 1:
-                raise NotFoundError
+                raise NotFoundError()
             current_app.db.set_member(id, posted)
             return jsonify(MemberResultSet([posted])), 200
-        except (KeyError, FileNotFoundError, NotFoundError):
-            raise NotFoundError()
-        except UnauthorizedError:
-            raise UnauthorizedError
-        except ForbiddenError:
-            raise ForbiddenError()
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
         except:
-            print(traceback.format_exc())
-            ParseError()  # todo: unexpected error
+            raise ParseError()
 
     def delete(self, id, mid):
         try:
             current_app.db.del_member(id, mid)
             return jsonify(), 200  # todo: use id, mid
-        except (KeyError, FileNotFoundError, NotFoundError):
-            raise NotFoundError()
-        except UnauthorizedError:
-            raise UnauthorizedError
-        except ForbiddenError:
-            raise ForbiddenError()
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
         except:
-            print(traceback.format_exc())
-            ParseError()
+            raise ParseError()
 
 
 class PropertiesView(MethodView):
@@ -130,10 +109,10 @@ class PropertiesView(MethodView):
             for key in property.split('.'):
                 result = result[key]
             return jsonify(result), 200
-        except KeyError:
-            raise NotFoundError()
-        except UnauthorizedError:
-            raise UnauthorizedError
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()
 
     def put(self, id, mid, property):
         try:
@@ -143,22 +122,18 @@ class PropertiesView(MethodView):
             if m_dict.get('mappings') and not isinstance(m_dict['mappings'], Model):
                 m_dict['mappings'] = CollectionItemMappingMetadata(**m_dict['mappings'])
             return jsonify(current_app.db.set_member(MemberItem(**m_dict))), 200
-        except KeyError:
-            raise NotFoundError()
-        except UnauthorizedError:
-            raise UnauthorizedError
-        except ForbiddenError:
-            raise ForbiddenError()
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()
 
     def delete(self, id, mid, property):
         try:
             return jsonify(), 200  # todo: use id, mid, property
-        except KeyError:
-            raise NotFoundError()
-        except UnauthorizedError:
-            raise UnauthorizedError
-        except ForbiddenError:
-            raise ForbiddenError()
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()
 
 
 members = {
