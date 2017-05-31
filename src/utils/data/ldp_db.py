@@ -27,7 +27,7 @@ class LDPDataBase(DBInterface):
     def get_collection(self, id=None):
         # todo: ASK and check if collection exists
         if id is not None:
-            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.select(self.marmotta.ldp(encoder.encode(id))), headers={"Accept":"application/sparql-results+json"})
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.select(self.marmotta.ldp(encoder.encode(id))), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
                 raise DBError()
             result = JSONResult(response.json())
@@ -36,13 +36,13 @@ class LDPDataBase(DBInterface):
             if len(contents) is 0:
                 raise NotFoundError()
         else:
-            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.list(s=self.marmotta.ldp(),p=LDP.ns.contains), headers={"Accept":"application/sparql-results+json"})
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.list(s=self.marmotta.ldp(),p=LDP.ns.contains), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
                 raise DBError()
             collections = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
             contents = []
             for collection in collections:
-                response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.select(collection), headers={"Accept":"application/sparql-results+json"})
+                response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.select(collection), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
                 if response.status_code is not 200:
                     raise DBError()
                 result = JSONResult(response.json())
@@ -70,7 +70,7 @@ class LDPDataBase(DBInterface):
             raise DBError()
 
     def del_collection(self, id):
-        found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(self.marmotta.ldp(encoder.encode(id))), headers={"Accept":"application/sparql-results+json"}).json()).askAnswer
+        found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(self.marmotta.ldp(encoder.encode(id))), headers={"Accept":"application/sparql-results+json","Content-Type":"application/sparql-select"}).json()).askAnswer
         if found:
             delete =self.sparql.collections.delete(self.marmotta.ldp(encoder.encode(id)))
             response = requests.post(self.marmotta.sparql.update, data=delete)
@@ -90,7 +90,7 @@ class LDPDataBase(DBInterface):
         # todo: ASK and check if member exists
         if mid is not None:
             id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(mid))
-            response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(id), headers={"Accept":"application/sparql-results+json"})
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
                 raise DBError()
             ds =self.sparql.result_to_dataset(JSONResult(response.json()))
@@ -99,13 +99,13 @@ class LDPDataBase(DBInterface):
                 raise NotFoundError()
         else:
             listed = self.sparql.collections.list(s=self.marmotta.ldp(encoder.encode(cid)+"/member"), p=LDP.ns.contains)
-            response = requests.post(self.marmotta.sparql.select, data=listed, headers={"Accept":"application/sparql-results+json"})
+            response = requests.post(self.marmotta.sparql.select, data=listed, headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
                 raise DBError()
             members = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
             contents = []
             for member in members:
-                response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(member), headers={"Accept":"application/sparql-results+json"})
+                response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(member), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
                 if response.status_code is not 200:
                     raise DBError()
                 result = JSONResult(response.json())
@@ -116,7 +116,7 @@ class LDPDataBase(DBInterface):
     def set_member(self, cid, m_obj):
         c_id = self.marmotta.ldp(encoder.encode(cid))
         m_id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m_obj.id))
-        response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(c_id), headers={"Accept":"application/sparql-results+json"})
+        response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(c_id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
         if response.status_code is not 200:
             raise DBError()
         found = JSONResult(response.json()).askAnswer
@@ -136,7 +136,7 @@ class LDPDataBase(DBInterface):
 
     def del_member(self, cid, mid):
         id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(mid))
-        response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.ask(id), headers={"Accept":"application/sparql-results+json"})
+        response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
         if response.status_code is not 200:
             raise DBError()
         found = JSONResult(response.json()).askAnswer
@@ -157,12 +157,12 @@ class LDPDataBase(DBInterface):
 
     def get_service(self):
         id = self.marmotta.ldp("service")
-        response = requests.post(self.marmotta.sparql.select, data=self.sparql.service.ask(id), headers={"Accept":"application/sparql-results+json"})
+        response = requests.post(self.marmotta.sparql.select, data=self.sparql.service.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
         if response.status_code is not 200:
             raise DBError()
         found = JSONResult(response.json()).askAnswer
         if found:
-            response = requests.post(self.marmotta.sparql.select, data=self.sparql.service.select(id), headers={"Accept":"application/sparql-results+json"})
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.service.select(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
                 raise DBError()
             ds =self.sparql.result_to_dataset(JSONResult(response.json()))
