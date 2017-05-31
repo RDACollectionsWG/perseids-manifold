@@ -62,6 +62,11 @@ class MemberView(MethodView):
             #    if current_app.db.get_service().providesCollectionPids:
             #        obj += {'id': current_app.db.get_id(MemberItem)}
             #        obj = MemberItem(**obj)
+            try:
+                current_app.db.get_member(id, obj.id)
+                raise ConflictError()
+            except NotFoundError:
+                pass
             current_app.db.set_member(id, obj)
             return jsonify(current_app.db.get_member(id, obj.id)), 201
         except (NotFoundError, DBError, UnauthorizedError):

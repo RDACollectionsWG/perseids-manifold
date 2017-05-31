@@ -59,6 +59,11 @@ class CollectionsView(MethodView):
                 if app.db.get_service().providesCollectionPids:
                     obj += {'id': app.mint.get_id(CollectionObject)}
                     obj = CollectionObject(**obj)
+            try:
+                app.db.get_collection(obj.id)
+                raise ConflictError()
+            except NotFoundError as e:
+                pass
             app.db.set_collection(obj)
             return jsonify(app.db.get_collection(obj.id).pop()), 201
         except (NotFoundError, DBError, UnauthorizedError):

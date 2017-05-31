@@ -78,11 +78,24 @@ class DBError(Exception):
         self.status_code = 500
         self.payload = payload
 
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+class ConflictError(Exception):
+
+    def __init__(self, payload=None):
+        Exception.__init__(self)
+        self.message = "The collection, member or endpoint was not found."
+        self.status_code = 409
+        self.payload = payload
 
     def to_dict(self):
         rv = dict(self.payload or ())
         rv['message'] = self.message
         return rv
+
 
 def activate(app):
     @app.errorhandler(ParseError)
@@ -113,6 +126,12 @@ def activate(app):
         return response
 
     @app.errorhandler(DBError)
+    def handler_db_error(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
+
+    @app.errorhandler(ConflictError)
     def handler_db_error(error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
