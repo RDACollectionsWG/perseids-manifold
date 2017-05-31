@@ -22,23 +22,13 @@ class CollectionsView(MethodView):
     def get(self, id=None):
         # todo: pagination
         # todo: maxExp
-        if id:
-            try:
+        try:
+            if id:
                 if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
-                    raise PermissionError
+                    raise UnauthorizedError()
                 collections = app.db.get_collection(id)
                 result = collections[0]
-            except KeyError:
-                #print(traceback.format_exc())
-                raise NotFoundError()
-            except FileNotFoundError:
-                #print(traceback.format_exc())
-                raise NotFoundError()
-            except:
-                #print(traceback.format_exc())
-                raise ParseError()
-        else:
-            try:
+            else:
                 model_type = request.args.get("f_modelType")
                 member_type = request.args.get("f_memberType")
                 ownership = request.args.get("f_ownership")
@@ -52,153 +42,143 @@ class CollectionsView(MethodView):
                 if ownership:
                     collections = [c for c in collections if c.properties.ownership == ownership]
                 result = CollectionResultSet(collections)
-            except:
-                #print(traceback.format_exc())
-                raise ParseError()
-        return jsonify(result), 200
+            return jsonify(result), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
     def post(self, id=None):
-        if not id:
+        try:
+            if id:
+                raise NotFoundError()  # 404
+            if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user()).x:
+                raise UnauthorizedError()
+            obj = json.loads(request.data)
+            if not isinstance(obj, Model):
+                if app.db.get_service().providesCollectionPids:
+                    obj += {'id': app.mint.get_id(CollectionObject)}
+                    obj = CollectionObject(**obj)
             try:
-                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user()).x:
-                    raise PermissionError
-                obj = json.loads(request.data)
-                if not isinstance(obj, Model):
-                    if app.db.get_service().providesCollectionPids:
-                        obj += {'id': app.mint.get_id(CollectionObject)}
-                        obj = CollectionObject(**obj)
-                app.db.set_collection(obj)
-                return jsonify(app.db.get_collection(obj.id).pop()), 201
-            except PermissionError:
-                raise UnauthorizedError()  # 401
-            except:
-                #print(traceback.format_exc())
-                raise ParseError()  # 400
-        else:
-            raise NotFoundError()  # 404
+                app.db.get_collection(obj.id)
+                raise ConflictError()
+            except NotFoundError as e:
+                pass
+            app.db.set_collection(obj)
+            return jsonify(app.db.get_collection(obj.id).pop()), 201
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
     def put(self, id=None):
-        if id:
-            try:
-                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).w:
-                    raise PermissionError
-                c_obj = json.loads(request.data)
-                if c_obj.id != id:
-                    raise ParseError()
-                app.db.get_collection(id)
-                return jsonify(app.db.set_collection(c_obj)), 200
-            except (KeyError, FileNotFoundError):
-                raise NotFoundError()  # 404
-            except UnauthorizedError:
-                raise UnauthorizedError()  # 401
-            except ForbiddenError:
-                raise ForbiddenError()  # 403
-            except:
-                #print(traceback.format_exc())
-                raise ParseError()  # 400
-        else:
-            raise NotFoundError()
+        try:
+            if not id:
+                raise NotFoundError()
+            if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).w:
+                raise UnauthorizedError()
+            c_obj = json.loads(request.data)
+            if c_obj.id != id:
+                raise ParseError()
+            app.db.get_collection(id)
+            return jsonify(app.db.set_collection(c_obj)), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
     def delete(self, id=None):
-        if id:
-            try:
-                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).x:
-                    raise PermissionError
-                app.db.del_collection(id)
-                return jsonify(''), 200
-            except KeyError:
+        try:
+            if not id:
                 raise NotFoundError()
-            except FileNotFoundError:
-                raise NotFoundError()
-            except:
+            if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).x:
                 raise UnauthorizedError()
-        else:
-            raise NotFoundError()
+            app.db.del_collection(id)
+            return jsonify(''), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
 
 class CapabilitiesView(MethodView):
     def get(self, id):
-        if id:
-            try:
-                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
-                    raise PermissionError
-                return jsonify(app.db.get_collection(id)[0].capabilities), 200
-            except KeyError:
+        try:
+            if not id:
                 raise NotFoundError()
-            except:
-                #print(traceback.format_exc())
+            if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
                 raise UnauthorizedError()
-        else:
-            raise NotFoundError()
+            return jsonify(app.db.get_collection(id)[0].capabilities), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
 
 class FindMatchView(MethodView):
     def post(self, id):
-        if id:
-            try:
-                if 'findMatch' not in app.service.supportedCollectionOperations:
-                    raise KeyError
-                if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
-                    raise PermissionError
-                posted = json.loads(request.data)
-                if isinstance(posted, Model):
-                    posted = posted.dict()
-                if isinstance(posted.get('mappings'), Model):
-                    posted['mappings'] = posted.get('mappings').dict()
-                members = [m for m in app.db.get_member(id) if dict_subset(posted, m.dict())]
-                return jsonify(MemberResultSet(members)), 200
-            except KeyError:
+        try:
+            if not id:
+                raise NotFoundError
+            if 'findMatch' not in app.service.supportedCollectionOperations:
                 raise NotFoundError()
-            except:
-                raise UnauthorizedError()
-        else:
-            raise NotFoundError()
+            if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user(),id).r:
+                raise UnauthorizedError
+            posted = json.loads(request.data)
+            if isinstance(posted, Model):
+                posted = posted.dict()
+            if isinstance(posted.get('mappings'), Model):
+                posted['mappings'] = posted.get('mappings').dict()
+            members = [m for m in app.db.get_member(id) if dict_subset(posted, m.dict())]
+            return jsonify(MemberResultSet(members)), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
 
 class IntersectionView(MethodView):
     def get(self, id, other_id):
-        if id and other_id:
-            try:
-                if 'intersection' not in app.service.supportedCollectionOperations:
-                    raise KeyError
-                if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
-                    raise PermissionError
-                if (id == other_id):
-                    intersection =  app.db.get_member(id)
-                else:
-                    set1 = [m.dict() for m in app.db.get_member(id)]
-                    set2 = [m.dict() for m in app.db.get_member(other_id)]
-                    intersection = [MemberItem(**m) for m in set1 if m in set2]
-                return jsonify(MemberResultSet(intersection)), 200
-            except KeyError:
+        try:
+            if not (id and other_id):
                 raise NotFoundError()
-            except:
+            if 'intersection' not in app.service.supportedCollectionOperations:
+                raise NotFoundError()
+            if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
                 raise UnauthorizedError()
-        else:
-            raise NotFoundError()
+            if (id == other_id):
+                intersection =  app.db.get_member(id)
+            else:
+                set1 = [m.dict() for m in app.db.get_member(id)]
+                set2 = [m.dict() for m in app.db.get_member(other_id)]
+                intersection = [MemberItem(**m) for m in set1 if m in set2]
+            return jsonify(MemberResultSet(intersection)), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
 
 class UnionView(MethodView):
     def get(self, id, other_id):
-        if id and other_id:
-            try:
-                if 'union' not in app.service.supportedCollectionOperations:
-                    raise KeyError
-                if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
-                    raise PermissionError
-                if (id == other_id):
-                    union =  app.db.get_member(id)
-                else:
-                    set1 = [m.dict() for m in app.db.get_member(id)]
-                    set2 = [m.dict() for m in app.db.get_member(other_id)]
-                    union = set1 + [m for m in set2 if m not in set1]
-                return jsonify(MemberResultSet([MemberItem(**m) for m in union])), 200
-            except KeyError:
+        try:
+            if not (id and other_id):
                 raise NotFoundError()
-            except:
+            if 'union' not in app.service.supportedCollectionOperations:
+                raise NotFoundError()
+            if app.service.enforcesAccess and not (app.acl.get_permission(app.acl.get_user(),id).r and app.acl.get_permission(app.acl.get_user(),other_id).r):
                 raise UnauthorizedError()
-        else:
-            raise NotFoundError()
+            if (id == other_id):
+                union =  app.db.get_member(id)
+            else:
+                set1 = [m.dict() for m in app.db.get_member(id)]
+                set2 = [m.dict() for m in app.db.get_member(other_id)]
+                union = set1 + [m for m in set2 if m not in set1]
+            return jsonify(MemberResultSet([MemberItem(**m) for m in union])), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
 
 class FlattenView(MethodView):
@@ -217,23 +197,22 @@ class FlattenView(MethodView):
                 return [m_obj]
 
     def get(self, id):
-        if id:
-            try:
-                if 'flatten' not in app.service.supportedCollectionOperations:
-                    raise KeyError
-                members = self.flatten([self.recurse(m, -1) for m in app.db.get_member(id)])
-                if app.service.enforcesAccess:
-                    if not app.acl.get_permission(app.acl.get_user(),id).r:
-                        raise PermissionError
-                    else:
-                        members = [m for m in members if app.acl.get_permission(app.acl.get_user(),id,m.id).r]
-                return jsonify(MemberResultSet(members)), 200
-            except KeyError:
+        try:
+            if not id:
                 raise NotFoundError()
-            except:
-                raise UnauthorizedError()
-        else:
-            raise NotFoundError()
+            if 'flatten' not in app.service.supportedCollectionOperations:
+                raise NotFoundError()
+            members = self.flatten([self.recurse(m, -1) for m in app.db.get_member(id)])
+            if app.service.enforcesAccess:
+                if not app.acl.get_permission(app.acl.get_user(),id).r:
+                    raise UnauthorizedError()
+                else:
+                    members = [m for m in members if app.acl.get_permission(app.acl.get_user(),id,m.id).r]
+            return jsonify(MemberResultSet(members)), 200
+        except (NotFoundError, DBError, UnauthorizedError):
+            raise
+        except:
+            raise ParseError()  # 400
 
 
 class RedirectView(MethodView):

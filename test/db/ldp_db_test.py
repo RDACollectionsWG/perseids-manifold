@@ -8,6 +8,7 @@ from rdflib import Dataset
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
 
 from run import app
+from src.utils.base.errors import NotFoundError
 from src.utils.data.ldp_db import LDPDataBase
 from src.utils.ids.url_encoder import encoder
 from src.utils.rdf.queries import reset_marmotta
@@ -119,7 +120,7 @@ class DbTests(TestCase):
              c_obj = self.mock.collection()
              self.db.set_collection(c_obj)
              self.db.del_collection(c_obj.id)
-             with self.assertRaises(KeyError) as context:
+             with self.assertRaises(NotFoundError) as context:
                 self.db.get_collection(c_obj.id)
 
     def test_ldp_overwrite_collection(self):
@@ -169,7 +170,7 @@ class DbTests(TestCase):
              self.db.set_member(c_obj.id, m_obj)
              self.assertTrue(len(self.db.get_member(c_obj.id, m_obj.id)) == 1)
              self.db.del_member(c_obj.id, m_obj.id)
-             with self.assertRaises(KeyError) as context:
+             with self.assertRaises(NotFoundError) as context:
                  self.db.get_member(c_obj.id, m_obj.id)
 
     def test_db_overwrite_member(self):
