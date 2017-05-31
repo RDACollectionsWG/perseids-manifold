@@ -147,7 +147,8 @@ class LDPDataBase(DBInterface):
                 return True
             else:
                 raise DBError()
-        raise NotFoundError()
+        else:
+            raise NotFoundError()
 
     def upd_member(self, cid, m_obj):
         self.del_member(cid, m_obj.id)

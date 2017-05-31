@@ -5,6 +5,7 @@ from unittest import TestCase
 from flask import json
 
 from run import app
+from src.utils.base.errors import NotFoundError
 from src.utils.data.filesystem_db import FilesystemDB
 from test.mock import RandomGenerator
 
@@ -115,7 +116,7 @@ class MembersTest(TestCase):
                 self.app.db.set_member(c_obj.id, m_obj)
                 response = self.delete("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members/"+urllib.parse.quote_plus(m_obj.id))
                 self.assertEqual(response.status_code, 200)
-                with self.assertRaises(FileNotFoundError):
+                with self.assertRaises(NotFoundError):
                     self.app.db.get_member(c_obj.id, m_obj.id)
 
     def test_members_delete_unknown_id(self):

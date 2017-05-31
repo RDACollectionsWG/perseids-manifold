@@ -5,6 +5,7 @@ from unittest import TestCase
 from flask import json
 
 from run import app
+from src.utils.base.errors import NotFoundError
 from src.collections.models import CollectionObject
 from src.utils.data.filesystem_db import FilesystemDB
 from test.mock import RandomGenerator
@@ -82,7 +83,7 @@ class CollectionTest(TestCase):
             for r in results:
                 self.assertEqual(r.status_code, 200)
             for c in c_objs:
-                with self.assertRaises(FileNotFoundError):
+                with self.assertRaises(NotFoundError):
                     self.app.db.get_collection(c.id)
 
     def test_collection_delete_unknown_id(self):
