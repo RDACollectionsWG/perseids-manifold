@@ -20,31 +20,31 @@ class SPARQLTools:
 
     def __init__(self):
         self.collections=Struct(
-            list=lambda g=None, s=None, p=None, o=None: "SELECT ?g ?s ?p ?o WHERE {{ {} GRAPH ?g {{ ?s ?p ?o }} }}".format(" ".join(["BIND ({} as ?{})".format(v.n3(),k) for k,v in {"g":g, "s":s, "p":p, "o":o}.items() if v is not None])),
-            delete=lambda id: 'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}(/member|$).*" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id),
-            select=lambda id: 'SELECT ?g ?s ?p ?o WHERE {{ BIND("^{}($|/member.*)" AS ?pattern) GRAPH ?g {{ ?s ?p ?o }} FILTER(REGEX(STR(?g), ?pattern) || REGEX(STR(?s), ?pattern) || REGEX(STR(?o), ?pattern)) }}'.format(id),
-            insert=lambda dataset: 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])),
+            list=lambda g=None, s=None, p=None, o=None: "SELECT ?g ?s ?p ?o WHERE {{ {} GRAPH ?g {{ ?s ?p ?o }} }}".format(" ".join(["BIND ({} as ?{})".format(v.n3(),k) for k,v in {"g":g, "s":s, "p":p, "o":o}.items() if v is not None])).encode(encoding='UTF-8',errors='strict'),
+            delete=lambda id: 'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}(/member|$).*" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id).encode(encoding='UTF-8',errors='strict'),
+            select=lambda id: 'SELECT ?g ?s ?p ?o WHERE {{ BIND("^{}($|/member.*)" AS ?pattern) GRAPH ?g {{ ?s ?p ?o }} FILTER(REGEX(STR(?g), ?pattern) || REGEX(STR(?s), ?pattern) || REGEX(STR(?o), ?pattern)) }}'.format(id).encode(encoding='UTF-8',errors='strict'),
+            insert=lambda dataset: 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])).encode(encoding='UTF-8',errors='strict'),
             update=lambda dataset: [
-                'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id),
-                'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')]))
+                'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id).encode(encoding='UTF-8',errors='strict'),
+                'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])).encode(encoding='UTF-8',errors='strict')
             ],
-            ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Collection> }}'.format(id.n3())
+            ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Collection> }}'.format(id.n3()).encode(encoding='UTF-8',errors='strict')
         )
         self.members=Struct(
-            list=lambda g=None, s=None, p=None, o=None: "SELECT ?g ?s ?p ?o WHERE {{ {} GRAPH ?g {{ ?s ?p ?o }} }}".format(" ".join(["BIND ({} as ?{})".format(v.n3(),k) for k,v in {"g":g, "s":s, "p":p, "o":o}.items() if v is not None])),
-            delete=lambda id: 'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id),
-            select=lambda id: 'SELECT ?g ?s ?p ?o WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?g {{ ?s ?p ?o }} FILTER(REGEX(STR(?g), ?pattern) || REGEX(STR(?s), ?pattern) || REGEX(STR(?o), ?pattern)) }}'.format(id),
-            insert=lambda dataset: 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])),
+            list=lambda g=None, s=None, p=None, o=None: "SELECT ?g ?s ?p ?o WHERE {{ {} GRAPH ?g {{ ?s ?p ?o }} }}".format(" ".join(["BIND ({} as ?{})".format(v.n3(),k) for k,v in {"g":g, "s":s, "p":p, "o":o}.items() if v is not None])).encode(encoding='UTF-8',errors='strict'),
+            delete=lambda id: 'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id).encode(encoding='UTF-8',errors='strict'),
+            select=lambda id: 'SELECT ?g ?s ?p ?o WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?g {{ ?s ?p ?o }} FILTER(REGEX(STR(?g), ?pattern) || REGEX(STR(?s), ?pattern) || REGEX(STR(?o), ?pattern)) }}'.format(id).encode(encoding='UTF-8',errors='strict'),
+            insert=lambda dataset: 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])).encode(encoding='UTF-8',errors='strict'),
             update=lambda dataset: [
-                'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id),
-                'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')]))
+                'DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{ BIND("^{}$" AS ?pattern) GRAPH ?grph {{ ?sub ?pred ?obj }} FILTER(REGEX(STR(?grph), ?pattern) || REGEX(STR(?sub), ?pattern) || REGEX(STR(?obj), ?pattern)) }}'.format(id).encode(encoding='UTF-8',errors='strict'),
+                'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])).encode(encoding='UTF-8',errors='strict')
             ],
-            ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Member> }}'.format(id.n3())
+            ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Member> }}'.format(id.n3()).encode(encoding='UTF-8',errors='strict')
         )
         self.service=Struct(
-            select=lambda id: 'SELECT ?g ?s ?p ?o WHERE {{ BIND( {} AS ?s ) GRAPH ?g {{ ?s ?p ?o }} }}'.format(id.n3()),
-            insert=lambda dataset: 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])),
-            ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Service> }}'.format(id.n3())
+            select=lambda id: 'SELECT ?g ?s ?p ?o WHERE {{ BIND( {} AS ?s ) GRAPH ?g {{ ?s ?p ?o }} }}'.format(id.n3()).encode(encoding='UTF-8',errors='strict'),
+            insert=lambda dataset: 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])).encode(encoding='UTF-8',errors='strict'),
+            ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Service> }}'.format(id.n3()).encode(encoding='UTF-8',errors='strict')
         )
 
     def result_to_dataset(self, result):
