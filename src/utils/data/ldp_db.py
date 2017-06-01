@@ -63,7 +63,7 @@ class LDPDataBase(DBInterface):
         member = ds.graph(identifier=self.marmotta.ldp(c_id+'/member'))
         ldp += LDP.add_contains(collection.identifier, member.identifier)
         insert = self.sparql.collections.insert(ds)
-        response = requests.post(self.marmotta.sparql.update, data=insert)
+        response = requests.post(self.marmotta.sparql.update, data=insert, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
         if response.status_code is 200:
             return c_obj
         else:
