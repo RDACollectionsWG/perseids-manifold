@@ -5,6 +5,7 @@ from unittest import TestCase
 from flask import json
 
 from run import app
+from src.members.models import MemberItem
 from src.utils.base.errors import NotFoundError
 from src.utils.data.filesystem_db import FilesystemDB
 from test.mock import RandomGenerator
@@ -75,6 +76,32 @@ class MembersTest(TestCase):
             sortedMocks = [m.__dict__ for m in sorted(m_objs, key=lambda x: x.id)]
             for i in range(len(sortedMocks)):
                 self.assertDictEqual(sortedResponse[i], sortedMocks[i])
+
+    def test_member_recursive_get(self):
+        with self.app.app_context():
+            # create collection, members
+            c_objs = [self.mock.collection() for i in range(5)]
+            m_objs = {}
+            for i in [0,1,2,3]:
+                m_objs.update({c_objs[i].id:[self.mock.member() for j in range(4)]+[self.mock.member(c_objs[i+1].id)]})
+            m_objs.update({c_objs[4].id: [self.mock.member() for i in range(5)]})
+            # add collection, members
+            for c_obj in c_objs:
+                self.app.db.set_collection(c_obj)
+            for c,ms in m_objs.items():
+                for m in ms:
+                    self.app.db.set_member(c, m)
+            # GET members
+            response = self.get("collections/"+urllib.parse.quote_plus(c_objs[0].id)+"/members?expandDepth=5")
+            # assert 200 OK
+            self.assertEqual(response.status_code, 200)
+            dct = json.loads(response.data)
+            for i in range(4):
+                resultset = [d for d in dct.get('contents') if not isinstance(d, MemberItem)]
+                self.assertEqual(len(resultset),1)
+                dct = resultset[0]
+            resultset = [d for d in dct.get('contents') if not isinstance(d, MemberItem)]
+            self.assertEqual(len(resultset),0)
 
     def test_members_post(self):
         with self.app.app_context():
