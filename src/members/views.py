@@ -1,4 +1,4 @@
-import traceback
+import time
 
 from flask import current_app
 from flask import json, request
@@ -7,6 +7,7 @@ from flask.views import MethodView
 from src.utils.base.errors import *
 from .models import *
 
+profile = False
 
 class MemberView(MethodView):
 
@@ -26,7 +27,11 @@ class MemberView(MethodView):
     def get(self, id, mid=None):
         try:
             if mid:
+                #if profile:
+                #    start = time.time()
                 members = current_app.db.get_member(id, mid)
+                #if profile:
+                #    print("GET MEMBER: ",time.time()-start)
                 result = members[0]
             else:
                 datatype = request.args.get("f_datetype")
@@ -35,7 +40,13 @@ class MemberView(MethodView):
                 date_added = request.args.get("f_dateAdded")
                 cursor = request.args.get("cursor")
                 expand_depth = int(request.args.get("expandDepth") or 0)
+                if profile:
+                    start = time.time()
                 members = current_app.db.get_member(id)
+                if profile:
+                    print("GET MEMBERS: ",time.time()-start)
+                if profile:
+                    start = time.time()
                 if expand_depth is not 0:
                     members = [self.recurse(m, expand_depth) for m in members]
                 if datatype:
@@ -46,7 +57,13 @@ class MemberView(MethodView):
                     members = [m for m in members if hasattr(m,'mappings') and m.mappings.index == index]
                 if date_added:
                     members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
+                if profile:
+                    print("FILTER MEMBERS: ",time.time()-start)
+                if profile:
+                    start = time.time()
                 result = MemberResultSet(members)
+                if profile:
+                    print("CONVERT MEMBERS: ",time.time()-start)
             return jsonify(result), 200
         except (NotFoundError, DBError, UnauthorizedError):
             raise
@@ -62,12 +79,19 @@ class MemberView(MethodView):
             #    if current_app.db.get_service().providesCollectionPids:
             #        obj += {'id': current_app.db.get_id(MemberItem)}
             #        obj = MemberItem(**obj)
+            #if profile:
+            #    start = time.time()
             try:
                 current_app.db.get_member(id, obj.id)
                 raise ConflictError()
             except NotFoundError:
                 pass
+            #if profile:
+            #    print("CHECK EXISTING MEMBER:  ",time.time()-start)
+            #    start = time.time()
             current_app.db.set_member(id, obj)
+            #if profile:
+            #    print("WRITE MEMBER: ",time.time()-start)
             return jsonify(current_app.db.get_member(id, obj.id)), 201
         except (NotFoundError, DBError, UnauthorizedError):
             raise
