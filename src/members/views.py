@@ -15,13 +15,13 @@ class MemberView(MethodView):
 
     def recurse(self, m_obj, depth):
         if depth is 0:
-            return [m_obj]
+            return m_obj
         else:
             try:
                 m_objs = current_app.db.get_member(m_obj.id)
-                return self.flatten([self.recurse(m, depth-1) for m in m_objs])
+                return MemberResultSet([self.recurse(m, depth-1) for m in m_objs])
             except:
-                return [m_obj]
+                return m_obj
 
     def get(self, id, mid=None):
         try:
@@ -37,7 +37,7 @@ class MemberView(MethodView):
                 expand_depth = int(request.args.get("expandDepth") or 0)
                 members = current_app.db.get_member(id)
                 if expand_depth is not 0:
-                    members = self.flatten([self.recurse(m, expand_depth) for m in members])
+                    members = [self.recurse(m, expand_depth) for m in members]
                 if datatype:
                     members = [m for m in members if m.datatype == datatype]
                 if role:

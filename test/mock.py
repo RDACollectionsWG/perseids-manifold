@@ -16,9 +16,9 @@ LDP = ldp.ns
 
 class RandomGenerator:
 
-    def collection(self):
+    def collection(self, id=None):
         with app.app_context():
-            id = ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
+            id = id if id is not None else ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
             return CollectionObject.apply({
                 "id": id,
                 "capabilities": CollectionCapabilities.apply({
@@ -41,8 +41,8 @@ class RandomGenerator:
                 "description": {'something': u''.join(random.choice(string.printable) for _ in range(random.randint(30, 50)))+"\u00f6"}#"\u00f6"}
             })
 
-    def member(self):
-        return MemberItem(''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))),
+    def member(self, id=None):
+        return MemberItem(id if id is not None else ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))),
                           ''.join(random.choice(string.printable) for _ in range(random.randint(10, 30))))
 
     def service(self):
