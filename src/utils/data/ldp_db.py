@@ -98,6 +98,14 @@ class LDPDataBase(DBInterface):
             if len(contents) is 0:
                 raise NotFoundError()
         else:
+            # todo: throw error if collection does not exist
+            id = self.marmotta.ldp(encoder.encode(cid))
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            if response.status_code is not 200:
+                raise DBError()
+            found = JSONResult(response.json()).askAnswer
+            if not found:
+                raise NotFoundError
             listed = self.sparql.collections.list(s=self.marmotta.ldp(encoder.encode(cid)+"/member"), p=LDP.ns.contains)
             response = requests.post(self.marmotta.sparql.select, data=listed, headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
