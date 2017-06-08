@@ -28,7 +28,7 @@ class RandomGenerator:
                     "membershipIsMutable": random.choice([True, False]),
                     "metadataIsMutable": random.choice([True, False]),
                     "restrictedToType": "",
-                    "maxLength": 5
+                    "maxLength": -1
                 }),
                 "properties": CollectionProperties.apply({
                     "ownership": "perseids:me",
