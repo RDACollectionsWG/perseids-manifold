@@ -33,6 +33,7 @@ class SPARQLTools:
                 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])).encode()
             ],
             ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Collection> }}'.format(id.n3()).encode(),
+            size=lambda id: 'SELECT (COUNT(?x) AS ?size) WHERE {{ <{}/member> <http://www.w3.org/ns/ldp#contains> ?x }}'.format(str(id)).encode()
         )
         self.members=Struct(
             list=lambda g=None, s=None, p=None, o=None: "SELECT ?g ?s ?p ?o WHERE {{ {} GRAPH ?g {{ ?s ?p ?o }} }}".format(" ".join(["BIND ({} as ?{})".format(v.n3(),k) for k,v in {"g":g, "s":s, "p":p, "o":o}.items() if v is not None])).encode(),
