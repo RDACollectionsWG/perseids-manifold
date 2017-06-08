@@ -1,5 +1,4 @@
-import random
-import string
+import random, string, time
 
 import requests
 from rdflib import Dataset, Variable
@@ -41,13 +40,14 @@ class LDPDataBase(DBInterface):
                 raise DBError()
             collections = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
             contents = []
-            for collection in collections:
-                response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.select(collection), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            if len(collections):
+                response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.selects(collections), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
                 if response.status_code is not 200:
                     raise DBError()
                 result = JSONResult(response.json())
-                graph = self.sparql.result_to_dataset(result).graph(collection)
-                contents += self.RDA.graph_to_collection(graph)
+                graphs = [self.sparql.result_to_dataset(result).graph(collection) for collection in collections]
+                for graph in graphs:
+                    contents += self.RDA.graph_to_collection(graph)
         return contents
 
     def set_collection(self, c_obj):
@@ -98,7 +98,6 @@ class LDPDataBase(DBInterface):
             if len(contents) is 0:
                 raise NotFoundError()
         else:
-            # todo: throw error if collection does not exist
             id = self.marmotta.ldp(encoder.encode(cid))
             response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
@@ -111,14 +110,16 @@ class LDPDataBase(DBInterface):
             if response.status_code is not 200:
                 raise DBError()
             members = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
-            contents = []
-            for member in members:
-                response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(member), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            contents=[]
+            if len(members):
+                response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.selects(members), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
                 if response.status_code is not 200:
                     raise DBError()
                 result = JSONResult(response.json())
-                graph =self.sparql.result_to_dataset(result).graph(member)
-                contents += self.RDA.graph_to_member(graph)
+                dataset = self.sparql.result_to_dataset(result)
+                graphs = [dataset.graph(member) for member in members]
+                for graph in graphs:
+                    contents += self.RDA.graph_to_member(graph)
         return contents
 
     def set_member(self, cid, m_obj):
