@@ -75,6 +75,7 @@ class MemberView(MethodView):
             if not id:
                 raise NotFoundError()
             obj = json.loads(request.data)
+            # todo: raise parseError if
             #if not isinstance(obj, Model):
             #    if current_app.db.get_service().providesCollectionPids:
             #        obj += {'id': current_app.db.get_id(MemberItem)}
@@ -89,11 +90,12 @@ class MemberView(MethodView):
             #if profile:
             #    print("CHECK EXISTING MEMBER:  ",time.time()-start)
             #    start = time.time()
+            # todo change db interface to create/update? where create fails if item exists and update fails if it doesnt
             current_app.db.set_member(id, obj)
             #if profile:
             #    print("WRITE MEMBER: ",time.time()-start)
             return jsonify(current_app.db.get_member(id, obj.id)), 201
-        except (NotFoundError, DBError, UnauthorizedError):
+        except (NotFoundError, DBError, UnauthorizedError, ForbiddenError):
             raise
         except:
             raise ParseError()
