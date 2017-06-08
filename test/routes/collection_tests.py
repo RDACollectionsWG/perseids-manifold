@@ -1,4 +1,4 @@
-import urllib
+import urllib, requests, os
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
@@ -8,6 +8,8 @@ from run import app
 from src.utils.base.errors import NotFoundError
 from src.collections.models import CollectionObject
 from src.utils.data.filesystem_db import FilesystemDB
+from src.utils.data.ldp_db import LDPDataBase
+from src.utils.rdf.queries import reset_marmotta
 from test.mock import RandomGenerator
 
 
@@ -19,13 +21,19 @@ class CollectionTest(TestCase):
 
     def setUp(self):
         self.app = app
-        self.dir = TemporaryDirectory(dir='test/data')
+        self.server = os.environ.get('COLLECTIONS_API_TEST_DB')
+        if not self.server:
+            raise EnvironmentError
+        self.app.db = LDPDataBase(self.server)
+        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta)
+        #self.dir = TemporaryDirectory(dir='test/data')
         # self.dir = mkdtemp(dir='test/data')
-        self.app.db = FilesystemDB(self.dir.name)
+        #self.app.db = FilesystemDB(self.dir.name)
         self.mock = RandomGenerator()
 
     def tearDown(self):
-        self.dir.cleanup()
+        #self.dir.cleanup()
+        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta)
 
     def to_dict(self, c_obj):
         if isinstance(c_obj, CollectionObject):
