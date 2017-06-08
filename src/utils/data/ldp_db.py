@@ -8,7 +8,7 @@ from src.collections.models import *
 from src.members.models import *
 from src.service.models import Service
 from src.utils.conversions.rda import RDATools
-from src.utils.base.errors import NotFoundError, DBError
+from src.utils.base.errors import NotFoundError, DBError, ForbiddenError
 from src.utils.ids.marmotta import Marmotta
 from src.utils.ids.url_encoder import encoder
 from src.utils.rdf.ldp import LDP
@@ -128,30 +128,32 @@ class LDPDataBase(DBInterface):
                     raise DBError()
                 t1 = time.time()
                 result = JSONResult(response.json())
-                print("CONVERT RESULT: ", time.time()-t1) #if profiling else ''
+                print("CONVERT RESULT: ", time.time()-t1) if profiling else ''
                 t1 = time.time()
                 dataset = self.sparql.result_to_dataset(result)
-                print("CONVERT DATASET: ", time.time()-t1) #if profiling else ''
+                print("CONVERT DATASET: ", time.time()-t1) if profiling else ''
                 t1 = time.time()
                 graphs = [dataset.graph(member) for member in members]
-                print("CONVERT GRAPHS: ", time.time()-t1) #if profiling else ''
+                print("CONVERT GRAPHS: ", time.time()-t1) if profiling else ''
                 t1 = time.time()
                 for graph in graphs:
                     contents += self.RDA.graph_to_member(graph)
-                print("CONVERT CONTENTS: ", time.time()-t1) #if profiling else ''
+                print("CONVERT CONTENTS: ", time.time()-t1) if profiling else ''
             print("TOTAL: ", time.time()-tf) if profiling else ''
         return contents
 
     def set_member(self, cid, m_obj):
+
         c_id = self.marmotta.ldp(encoder.encode(cid))
         m_id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m_obj.id))
-        response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(c_id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
-        if response.status_code is not 200:
-            raise DBError()
-        found = JSONResult(response.json()).askAnswer
-        if not found:
-            raise NotFoundError()
-
+        collection = self.get_collection(cid).pop() # 404 if collection not found
+        if collection.capabilities.maxLength >= 0:
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.size(c_id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            if response.status_code is not 200:
+                raise DBError()
+            size = JSONResult(response.json()).bindings.pop().get(Variable('size'))
+            if int(size) >= collection.capabilities.maxLength:
+                raise ForbiddenError()#"Operation forbidden. Collection of maximum size {} is full.".format(collection.capabilities.maxLength))
         ds = Dataset()
         member = ds.graph(identifier=m_id)
         member += self.RDA.member_to_graph(cid,m_obj)
