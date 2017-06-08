@@ -1,5 +1,4 @@
-import random
-import string
+import random, string, time
 
 import requests
 from rdflib import Dataset, Variable
@@ -16,6 +15,7 @@ from src.utils.rdf.ldp import LDP
 from src.utils.rdf.sparql import SPARQLTools
 from .db import DBInterface
 
+profiling = False
 
 class LDPDataBase(DBInterface):
 
@@ -41,13 +41,14 @@ class LDPDataBase(DBInterface):
                 raise DBError()
             collections = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
             contents = []
-            for collection in collections:
-                response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.select(collection), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            if len(collections):
+                response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.selects(collections), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
                 if response.status_code is not 200:
                     raise DBError()
                 result = JSONResult(response.json())
-                graph = self.sparql.result_to_dataset(result).graph(collection)
-                contents += self.RDA.graph_to_collection(graph)
+                graphs = [self.sparql.result_to_dataset(result).graph(collection) for collection in collections]
+                for graph in graphs:
+                    contents += self.RDA.graph_to_collection(graph)
         return contents
 
     def set_collection(self, c_obj):
@@ -98,19 +99,47 @@ class LDPDataBase(DBInterface):
             if len(contents) is 0:
                 raise NotFoundError()
         else:
+            tf = time.time()
+            t1 = time.time()
+            id = self.marmotta.ldp(encoder.encode(cid))
+            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            print("ASK COLLECTION: ", time.time()-t1) if profiling else ''
+            t1 = time.time()
+            if response.status_code is not 200:
+                raise DBError()
+            found = JSONResult(response.json()).askAnswer
+            if not found:
+                raise NotFoundError
+            print("PARSE RESULT: ", time.time()-t1) if profiling else ''
+            t1 = time.time()
             listed = self.sparql.collections.list(s=self.marmotta.ldp(encoder.encode(cid)+"/member"), p=LDP.ns.contains)
             response = requests.post(self.marmotta.sparql.select, data=listed, headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            print("GET MEMBER IDs: ", time.time()-t1) if profiling else ''
+            t1 = time.time()
             if response.status_code is not 200:
                 raise DBError()
             members = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
-            contents = []
-            for member in members:
-                response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.select(member), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            contents=[]
+            if len(members):
+                t1 = time.time()
+                response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.selects(members), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+                print("GET MEMBERS: ", time.time()-t1) if profiling else ''
                 if response.status_code is not 200:
                     raise DBError()
+                t1 = time.time()
                 result = JSONResult(response.json())
-                graph =self.sparql.result_to_dataset(result).graph(member)
-                contents += self.RDA.graph_to_member(graph)
+                print("CONVERT RESULT: ", time.time()-t1) #if profiling else ''
+                t1 = time.time()
+                dataset = self.sparql.result_to_dataset(result)
+                print("CONVERT DATASET: ", time.time()-t1) #if profiling else ''
+                t1 = time.time()
+                graphs = [dataset.graph(member) for member in members]
+                print("CONVERT GRAPHS: ", time.time()-t1) #if profiling else ''
+                t1 = time.time()
+                for graph in graphs:
+                    contents += self.RDA.graph_to_member(graph)
+                print("CONVERT CONTENTS: ", time.time()-t1) #if profiling else ''
+            print("TOTAL: ", time.time()-tf) if profiling else ''
         return contents
 
     def set_member(self, cid, m_obj):
@@ -122,6 +151,7 @@ class LDPDataBase(DBInterface):
         found = JSONResult(response.json()).askAnswer
         if not found:
             raise NotFoundError()
+
         ds = Dataset()
         member = ds.graph(identifier=m_id)
         member += self.RDA.member_to_graph(cid,m_obj)

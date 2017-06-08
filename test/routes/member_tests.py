@@ -1,13 +1,16 @@
-import urllib
+import urllib, time, os, requests
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from flask import json
+from multiprocessing.pool import ThreadPool
 
 from run import app
 from src.members.models import MemberItem
 from src.utils.base.errors import NotFoundError
 from src.utils.data.filesystem_db import FilesystemDB
+from src.utils.data.ldp_db import LDPDataBase
+from src.utils.rdf.queries import reset_marmotta
 from test.mock import RandomGenerator
 
 
@@ -19,12 +22,18 @@ class MembersTest(TestCase):
 
     def setUp(self):
         self.app = app
-        self.dir = TemporaryDirectory(dir='test/data')
-        self.app.db = FilesystemDB(self.dir.name)
+        self.server = os.environ.get('COLLECTIONS_API_TEST_DB')
+        if not self.server:
+            raise EnvironmentError
+        self.app.db = LDPDataBase(self.server)
+        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta)
+        #elf.dir = TemporaryDirectory(dir='test/data')
+        #elf.app.db = FilesystemDB(self.dir.name)
         self.mock = RandomGenerator()
 
     def tearDown(self):
-        self.dir.cleanup()
+        #elf.dir.cleanup()
+        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta)
 
     def get(self, path):
         with self.app.test_client() as client:
@@ -66,8 +75,9 @@ class MembersTest(TestCase):
             m_objs = [self.mock.member() for i in range(5)]
             # add collection, members
             self.app.db.set_collection(c_obj)
-            for m_obj in m_objs:
-                self.app.db.set_member(c_obj.id, m_obj)
+            pool = ThreadPool(50)
+            # for m_obj in m_objs:
+            pool.map(lambda m_obj: self.app.db.set_member(c_obj.id, m_obj), m_objs)
             # GET members
             response = self.get("collections/"+urllib.parse.quote_plus(c_obj.id)+"/members")
             # assert 200 OK
@@ -96,6 +106,7 @@ class MembersTest(TestCase):
             # assert 200 OK
             self.assertEqual(response.status_code, 200)
             dct = json.loads(response.data)
+            #rint(response.data)
             for i in range(4):
                 resultset = [d for d in dct.get('contents') if not isinstance(d, MemberItem)]
                 self.assertEqual(len(resultset),1)
