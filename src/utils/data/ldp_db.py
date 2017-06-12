@@ -147,6 +147,11 @@ class LDPDataBase(DBInterface):
         c_id = self.marmotta.ldp(encoder.encode(cid))
         m_id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m_obj.id))
         collection = self.get_collection(cid).pop() # 404 if collection not found
+
+        if not collection.capabilities.membershipIsMutable:
+            raise ForbiddenError()
+
+
         if collection.capabilities.maxLength >= 0:
             response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.size(c_id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
             if response.status_code is not 200:
@@ -154,6 +159,7 @@ class LDPDataBase(DBInterface):
             size = JSONResult(response.json()).bindings.pop().get(Variable('size'))
             if int(size) >= collection.capabilities.maxLength:
                 raise ForbiddenError()#"Operation forbidden. Collection of maximum size {} is full.".format(collection.capabilities.maxLength))
+
         ds = Dataset()
         member = ds.graph(identifier=m_id)
         member += self.RDA.member_to_graph(cid,m_obj)
@@ -167,6 +173,10 @@ class LDPDataBase(DBInterface):
             raise DBError()
 
     def del_member(self, cid, mid):
+        collection = self.get_collection(cid).pop() # 404 if collection not found
+        if not collection.capabilities.membershipIsMutable:
+            raise ForbiddenError()
+        
         id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(mid))
         response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
         if response.status_code is not 200:
