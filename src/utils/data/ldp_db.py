@@ -83,9 +83,13 @@ class LDPDataBase(DBInterface):
             raise NotFoundError()
 
     def upd_collection(self, c_obj):
-        self.del_collection(c_obj.id)
-        self.set_collection(c_obj)
-        return c_obj
+        obj = self.get_collection(c_obj.id)
+        if obj and obj.pop().capabilities.metadataIsMutable:
+            self.del_collection(c_obj.id)
+            self.set_collection(c_obj)
+            return c_obj
+        else:
+            raise ForbiddenError()
 
     def get_member(self, cid, mid=None):
         # todo: ASK and check if member exists
