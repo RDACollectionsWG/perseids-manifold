@@ -1,4 +1,4 @@
-import time
+import time, sys
 
 from flask import current_app
 from flask import json, request
@@ -24,6 +24,15 @@ class MemberView(MethodView):
             except:
                 return m_obj
 
+    def getParams(self, args):
+        datatype = request.args.get("f_datatype")
+        role = request.args.get("f_role")
+        index = request.args.get("f_index")
+        date_added = request.args.get("f_dateAdded")
+        expand_depth = int(request.args.get("expandDepth") or 0)
+        cursor = request.args.get("cursor")
+        return [datatype, role, index, date_added, expand_depth, cursor]
+
     def get(self, id, mid=None):
         try:
             if mid:
@@ -34,36 +43,22 @@ class MemberView(MethodView):
                 #    print("GET MEMBER: ",time.time()-start)
                 result = members[0]
             else:
-                datatype = request.args.get("f_datetype")
-                role = request.args.get("f_role")
-                index = request.args.get("f_index")
-                date_added = request.args.get("f_dateAdded")
-                cursor = request.args.get("cursor")
-                expand_depth = int(request.args.get("expandDepth") or 0)
-                if profile:
-                    start = time.time()
+                collection = current_app.db.get_collction(id)
                 members = current_app.db.get_member(id)
-                if profile:
-                    print("GET MEMBERS: ",time.time()-start)
-                if profile:
-                    start = time.time()
+                datatype, role, index, date_added, expand_depth, cursor = self.getParams(request.args)
                 if expand_depth is not 0:
                     members = [self.recurse(m, expand_depth) for m in members]
                 if datatype:
                     members = [m for m in members if m.datatype == datatype]
-                if role:
+                if role and collection.capabilities.supportsRoles:
                     members = [m for m in members if hasattr(m,'mappings') and m.mappings.role == role]
                 if index:
                     members = [m for m in members if hasattr(m,'mappings') and m.mappings.index == index]
                 if date_added:
                     members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
-                if profile:
-                    print("FILTER MEMBERS: ",time.time()-start)
-                if profile:
-                    start = time.time()
+                if collection.capabilities.isOrdered:
+                    members = sorted(members, lambda m: m.mappings.index if "mappings" in m.__dir__() and "index" in m.mappings.__dir__() else sys.maxsize)
                 result = MemberResultSet(members)
-                if profile:
-                    print("CONVERT MEMBERS: ",time.time()-start)
             return jsonify(result), 200
         except (NotFoundError, DBError, UnauthorizedError):
             raise
