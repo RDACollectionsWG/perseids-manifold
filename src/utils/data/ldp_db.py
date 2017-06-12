@@ -155,6 +155,9 @@ class LDPDataBase(DBInterface):
         if not collection.capabilities.membershipIsMutable:
             raise ForbiddenError()
 
+        if collection.capabilities.restrictedToType and "datatype" in m_obj.mappings.__dict():
+            if not m_obj.datatype in collection.capabilities.restrictedToType:
+                raise ForbiddenError()
 
         if collection.capabilities.maxLength >= 0:
             response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.size(c_id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
@@ -180,7 +183,6 @@ class LDPDataBase(DBInterface):
         collection = self.get_collection(cid).pop() # 404 if collection not found
         if not collection.capabilities.membershipIsMutable:
             raise ForbiddenError()
-        
         id = self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(mid))
         response = requests.post(self.marmotta.sparql.select, data=self.sparql.members.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
         if response.status_code is not 200:
