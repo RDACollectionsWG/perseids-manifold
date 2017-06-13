@@ -43,7 +43,7 @@ class MemberView(MethodView):
                 #    print("GET MEMBER: ",time.time()-start)
                 result = members[0]
             else:
-                collection = current_app.db.get_collction(id)
+                collection = current_app.db.get_collection(id).pop()
                 members = current_app.db.get_member(id)
                 datatype, role, index, date_added, expand_depth, cursor = self.getParams(request.args)
                 if expand_depth is not 0:
@@ -57,7 +57,7 @@ class MemberView(MethodView):
                 if date_added:
                     members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
                 if collection.capabilities.isOrdered:
-                    members = sorted(members, lambda m: m.mappings.index if "mappings" in m.__dir__() and "index" in m.mappings.__dir__() else sys.maxsize)
+                    members = sorted(members, key=lambda m: m.mappings.index if hasattr(m, "mappings") and hasattr(m.mappings, "index") else sys.maxsize)
                 result = MemberResultSet(members)
             return jsonify(result), 200
         except (NotFoundError, DBError, UnauthorizedError):
