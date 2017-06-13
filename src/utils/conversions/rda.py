@@ -49,7 +49,7 @@ class RDATools:
                 str(self.ns.ontology): {'label': 'ontology', 'type': str, 'rdf': Literal, 'map': {}},
                 str(self.ns.mappings): {'label': 'mappings', 'type': lambda x: x, 'rdf': lambda x: URIRef(x+'#mappings'), 'map': {
                     str(self.ns.role): {'label': 'role', 'type': str, 'rdf': Literal, 'map': {}},
-                    str(self.ns.index): {'label': 'index', 'type': int, 'rdf': Literal, 'map': {}},
+                    str(self.ns.itemIndex): {'label': 'index', 'type': int, 'rdf': Literal, 'map': {}},
                     str(self.ns.dateAdded): {'label': 'dateAdded', 'type': str, 'rdf': Literal, 'map': {}}
                 }}
             },
