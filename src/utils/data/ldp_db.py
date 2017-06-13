@@ -155,7 +155,7 @@ class LDPDataBase(DBInterface):
         if not collection.capabilities.membershipIsMutable:
             raise ForbiddenError()
 
-        if collection.capabilities.restrictedToType and "datatype" in m_obj.mappings.__dict():
+        if collection.capabilities.restrictedToType and hasattr(m_obj,"datatype"):
             if not m_obj.datatype in collection.capabilities.restrictedToType:
                 raise ForbiddenError()
 
