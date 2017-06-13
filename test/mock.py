@@ -1,4 +1,4 @@
-import random, string, json
+import random, string, json, datetime
 
 from rdflib import URIRef, Literal, Graph
 from rdflib.namespace import RDF, DCTERMS
@@ -25,10 +25,10 @@ class RandomGenerator:
                     "isOrdered": random.choice([True, False]),
                     "appendsToEnd": random.choice([True, False]),
                     "supportsRoles": random.choice([True, False]),
-                    "membershipIsMutable": random.choice([True, False]),
-                    "metadataIsMutable": random.choice([True, False]),
+                    "membershipIsMutable": True,#random.choice([True, False]),
+                    "metadataIsMutable": True,#random.choice([True, False]),
                     "restrictedToType": "",
-                    "maxLength": 5
+                    "maxLength": -1
                 }),
                 "properties": CollectionProperties.apply({
                     "ownership": "perseids:me",
@@ -43,7 +43,8 @@ class RandomGenerator:
 
     def member(self, id=None):
         return MemberItem(id if id is not None else ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))),
-                          ''.join(random.choice(string.printable) for _ in range(random.randint(10, 30))))
+                          ''.join(random.choice(string.printable) for _ in range(random.randint(10, 30))),
+                          mappings=CollectionItemMappingMetadata(role="http://example.org/item", index=random.randint(1,9999), dateAdded=datetime.datetime.now().isoformat()))
 
     def service(self):
         return Service.apply({
@@ -156,11 +157,12 @@ class RandomGenerator:
             g.add((node, RDA.ontology, Literal(obj.ontology)))
         if hasattr(obj, 'mappings'):
             g.add((node, RDA.mappings, mappings))
-            if hasattr(obj, 'mappings.role'):
-                g.add((mappings, RDA.role, Literal(obj.mappings.role)))
-            if hasattr(obj, 'mappings.index'):
-                g.add((mappings, RDA.index, Literal(obj.mappings.index)))
-            if hasattr(obj, 'mappings.dateAdded'):
+            mp = obj.mappings
+            if hasattr(mp, 'role'):
+                g.add((mappings, RDA.role, URIRef(obj.mappings.role)))
+            if hasattr(mp, 'index'):
+                g.add((mappings, RDA.itemIndex, Literal(obj.mappings.index)))
+            if hasattr(mp, 'dateAdded'):
                 g.add((mappings, RDA.dateAdded, Literal(obj.mappings.dateAdded)))
         return g
         

@@ -1,6 +1,6 @@
 import urllib, time, os, requests
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, main
 
 from flask import json
 from multiprocessing.pool import ThreadPool
@@ -66,7 +66,7 @@ class MembersTest(TestCase):
             for r in responses:
                 self.assertEqual(r['out'].status_code, 200)
                 # compare members
-                self.assertDictEqual(json.loads(r['out'].data).__dict__, r['in'].__dict__)
+                self.assertDictEqual(json.loads(r['out'].data).dict(), r['in'].dict())
 
     def test_members_get(self):
         with self.app.app_context():
@@ -82,8 +82,8 @@ class MembersTest(TestCase):
             response = self.get("collections/"+urllib.parse.quote_plus(c_obj.id)+"/members")
             # assert 200 OK
             self.assertEqual(response.status_code, 200)
-            sortedResponse = [r.__dict__ for r in sorted(json.loads(response.data)['contents'], key=lambda x: x.id)]
-            sortedMocks = [m.__dict__ for m in sorted(m_objs, key=lambda x: x.id)]
+            sortedResponse = [r.dict() for r in sorted(json.loads(response.data)['contents'], key=lambda x: x.id)]
+            sortedMocks = [m.dict() for m in sorted(m_objs, key=lambda x: x.id)]
             for i in range(len(sortedMocks)):
                 self.assertDictEqual(sortedResponse[i], sortedMocks[i])
 
@@ -128,6 +128,15 @@ class MembersTest(TestCase):
             for i in range(len(sortedMocks)):
                 self.assertEqual(sortedMocks[i]['location'], sortedResponse[i].location)
 
+    def test_members_post_too_many(self):
+        with self.app.app_context():
+            c_obj = self.mock.collection()
+            c_obj.capabilities.maxLength = 3
+            self.app.db.set_collection(c_obj)
+            m_dicts = [self.mock.member().__dict__ for i in range(5)]
+            responses = [self.post("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members", json.dumps(m)) for m in m_dicts]
+            self.assertListEqual([*map(lambda r:r.status_code,responses)], [201, 201, 201, 403, 403])
+
     def test_members_put_id(self):
         with self.app.app_context():
             c_obj = self.mock.collection()
@@ -164,3 +173,6 @@ class MembersTest(TestCase):
             m_obj = self.mock.member()
             response = self.delete("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members/"+urllib.parse.quote_plus(m_obj.id))
             self.assertEqual(response.status_code, 404)
+
+if __name__ == '__main__':
+    main()
