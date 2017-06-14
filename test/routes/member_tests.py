@@ -75,9 +75,10 @@ class MembersTest(TestCase):
             m_objs = [self.mock.member() for i in range(5)]
             # add collection, members
             self.app.db.set_collection(c_obj)
-            pool = ThreadPool(50)
-            # for m_obj in m_objs:
-            pool.map(lambda m_obj: self.app.db.set_member(c_obj.id, m_obj), m_objs)
+            for m_obj in m_objs:
+                self.app.db.set_member(c_obj.id, m_obj)
+            # pool = ThreadPool(50)
+            # pool.map(lambda m_obj: self.app.db.set_member(c_obj.id, m_obj), m_objs)
             # GET members
             response = self.get("collections/"+urllib.parse.quote_plus(c_obj.id)+"/members")
             # assert 200 OK
