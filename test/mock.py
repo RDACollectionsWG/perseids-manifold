@@ -16,35 +16,72 @@ LDP = ldp.ns
 
 class RandomGenerator:
 
-    def collection(self, id=None):
+    def collection(self,
+                   id=None,
+                   isOrdered=False,
+                   appendsToEnd=False,
+                   supportsRoles=True,
+                   membershipIsMutable=True,
+                   metatdataIsMutable=True,
+                   restrictedToType="",
+                   maxLength=-1,
+                   ownership="http://example.org/me",
+                   license="CCbySA",
+                   modelType="https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md",
+                   hasAccessRestrictions=False,
+                   memberOf=[],
+                   descriptionOntology="https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md",
+                   description={}):
         with app.app_context():
             id = id if id is not None else ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
             return CollectionObject.apply({
                 "id": id,
                 "capabilities": CollectionCapabilities.apply({
-                    "isOrdered": random.choice([True, False]),
-                    "appendsToEnd": random.choice([True, False]),
-                    "supportsRoles": random.choice([True, False]),
-                    "membershipIsMutable": True,#random.choice([True, False]),
-                    "metadataIsMutable": True,#random.choice([True, False]),
-                    "restrictedToType": "",
-                    "maxLength": -1
+                    "isOrdered": isOrdered,
+                    "appendsToEnd": appendsToEnd,
+                    "supportsRoles": supportsRoles,
+                    "membershipIsMutable": membershipIsMutable,
+                    "metadataIsMutable": metatdataIsMutable,
+                    "restrictedToType": restrictedToType,
+                    "maxLength": maxLength
                 }),
                 "properties": CollectionProperties.apply({
-                    "ownership": "perseids:me",
-                    "license": "CCbySA",
-                    "modelType": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md",
-                    "hasAccessRestrictions": random.choice([True, False]),
-                    "memberOf": [],
-                    "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md"
+                    "ownership": ownership,
+                    "license": license,
+                    "modelType": modelType,
+                    "hasAccessRestrictions": hasAccessRestrictions,
+                    "memberOf": memberOf,
+                    "descriptionOntology": descriptionOntology
                 }),
-                "description": {'something': u''.join(random.choice(string.printable) for _ in range(random.randint(30, 50)))+"\u00f6"}#"\u00f6"}
+                "description": description
             })
 
-    def member(self, id=None):
-        return MemberItem(id if id is not None else ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))),
-                          ''.join(random.choice(string.printable) for _ in range(random.randint(10, 30))),
-                          mappings=CollectionItemMappingMetadata(role="http://example.org/item", index=random.randint(1,9999), dateAdded=datetime.datetime.now().isoformat()))
+    def member(self,
+               id=None,
+               location=None,
+               datatype=None,
+               ontology=None,
+               role=None,
+               index=None,
+               dateAdded=None):
+        item = {
+            'id': id if id else ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30))),
+            'location': location if location else ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
+        }
+        if datatype:
+            item['datatype'] = datatype
+        if ontology:
+            item['ontology'] = ontology
+        if role or index or dateAdded:
+            mappings = {}
+            if role:
+                mappings['role'] = role
+            if index:
+                mappings['index'] = index
+            if dateAdded:
+                mappings['dateAdded'] = dateAdded
+            item['mappings'] = CollectionItemMappingMetadata(**mappings)
+        return MemberItem(**item)
 
     def service(self):
         return Service.apply({
@@ -136,7 +173,7 @@ class RandomGenerator:
         g.add((properties, RDA.modelType, Literal(obj.properties.modelType)))
         g.add((properties, RDA.descriptionOntology, Literal(obj.properties.descriptionOntology)))
         g.add((properties, DCTERMS.license, Literal(obj.properties.license)))
-        g.add((properties, DCTERMS.rightsHolder, Literal(obj.properties.ownership)))
+        g.add((properties, DCTERMS.rightsHolder, URIRef(obj.properties.ownership)))
         g.add((properties, RDA.hasAccessRestrictions, Literal(obj.properties.hasAccessRestrictions)))
         g.add((description, URIRef(description+"@something"), Literal(obj.description['something'])))
         return g
