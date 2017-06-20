@@ -20,8 +20,7 @@ class CollectionObject(Model):
         self.id = id or 'http://example.org/mem/'+str(randint(100000, 999999)) # todo: make parsing safe and id minting formalized, e.g. give Service Object a function
         self.capabilities = capabilities if isinstance(capabilities, CollectionCapabilities) else CollectionCapabilities(**capabilities)
         self.properties = properties if isinstance(properties, CollectionProperties) else CollectionProperties(**properties)
-        if description:
-            self.description = description
+        self.description = description
 
 
 class CollectionCapabilities(Model):
