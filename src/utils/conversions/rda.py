@@ -85,6 +85,8 @@ class RDATools:
             elif obj == RDF.nil:
                 key = propertiesMap.get(str(prd),{'label':str(prd).replace(str(node)+"@","")}).get('label')
                 dct.update({key: []})
+            elif prd == RDF.type and obj == RDA.Empty:
+                dct.update({})
             elif str(prd) in propertiesMap or propertiesMap == {}:
                 key = propertiesMap.get(str(prd),{'label':str(prd).replace(str(node)+"@","")}).get('label')
                 value = propertiesMap.get(str(prd),{'type':str}).get('type')(obj)
@@ -113,6 +115,9 @@ class RDATools:
         elif isinstance(val, dict):
             if not subject:
                 subject = g.identifier
+            items = [(k,v) for k,v in val.items() if not k.startswith("__")]
+            if len(items) is 0:
+                g.add((subject,URIRef(map.get(key, {'label': RDF.type})['label']), RDA.Empty))
             for k,v in [(k,v) for k,v in val.items() if not k.startswith("__")]:
                 if isinstance(v, list):
                     self.dict_to_graph(v, key=k, subject=subject, map=map, g=g) # same subject, map
