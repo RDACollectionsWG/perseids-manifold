@@ -6,15 +6,11 @@ from src.utils.base.struct import Struct
 # todo: the queries could be consolidated into a single set with a few more parameters
 # todo: it's cleaner architecture but more complex interface - do it anyways?
 
-class SPARQLSet:
-
-    def __init__(self, list=None, select=None, delete=None, insert=None, update=None, ask=None):
-        self.list = list
-        self.select = select
-        self.delete = delete
-        self.insert = insert
-        self.update = update
-        self.ask = ask
+def result_to_dataset(result):
+    ds = Dataset()
+    for q in result.bindings:
+        ds.add((q[Variable('s')],q[Variable('p')],q[Variable('o')],q[Variable('g')]))
+    return ds
 
 class SPARQLTools:
 
@@ -82,7 +78,4 @@ class SPARQLTools:
         )
 
     def result_to_dataset(self, result):
-        ds = Dataset()
-        for q in result.bindings:
-            ds.add((q[Variable('s')],q[Variable('p')],q[Variable('o')],q[Variable('g')]))
-        return ds
+        return result_to_dataset(result)
