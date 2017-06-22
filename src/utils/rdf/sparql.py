@@ -103,5 +103,55 @@ class SPARQLTools:
             finally:
                 return SPARQLSet(json, response.status_code)
 
+    def list(self, g=None, s=None, p=None, o=None):
+        if not (g or s or p or o):
+            raise DBError()
+        query=self.queries.list(g,s,p,o)
+        return self.request(query, self.server.select)
+
+    def select(self, ids):
+        if not isinstance(ids, list):
+            ids = [ids]
+        for id in ids:
+            if not isinstance(id, URIRef):
+                raise DBError()
+        query = self.queries.select(ids)
+        return self.request(query, self.server.select)
+
+    def insert(self, dataset):
+        if not isinstance(dataset, Dataset):
+            raise DBError()
+        query = self.queries.insert(dataset)
+        return self.request(query, self.server.update)
+
+    def delete(self, id):
+        if not isinstance(id, URIRef):
+            raise DBError()
+        query = self.queries.delete(id)
+        return self.request(query, self.server.update)
+
+    def ask(self, id, type):
+        if not isinstance(id, URIRef):
+            raise DBError()
+        query = self.queries.ask(id, type)
+        return self.request(query, self.server.select)
+
+    def size(self, id):
+        if not isinstance(id, URIRef):
+            raise DBError()
+        query = self.queries.size(id)
+        return self.request(query, self.server.select)
+
+    def find(self, ids, type):
+        if not isinstance(ids, list):
+            ids = [ids]
+        for id in ids:
+            if not isinstance(id, URIRef):
+                raise DBError()
+        if not isinstance(type, URIRef):
+            raise DBError()
+        query = self.queries.find(ids, type)
+        return self.request(query, self.server.select)
+
     def result_to_dataset(self, result):
         return result_to_dataset(result)
