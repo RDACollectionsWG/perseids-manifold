@@ -1,5 +1,5 @@
 from rdflib import URIRef, Dataset, Variable
-
+from rdflib.plugins.sparql.results.jsonresults import JSONResult
 from src.utils.base.struct import Struct
 
 
@@ -11,6 +11,15 @@ def result_to_dataset(result):
     for q in result.bindings:
         ds.add((q[Variable('s')],q[Variable('p')],q[Variable('o')],q[Variable('g')]))
     return ds
+
+class SPARQLSet(JSONResult):
+
+    def __init__(self, json, status_code):
+        super().__init__(json)
+        self.status_code = status_code
+
+    def toDataset(self):
+        return result_to_dataset(self)
 
 class SPARQLTools:
 
