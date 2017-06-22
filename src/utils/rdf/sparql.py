@@ -1,6 +1,8 @@
+from requests import post
 from rdflib import URIRef, Dataset, Variable
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
 from src.utils.base.struct import Struct
+from src.utils.base.errors import DBError
 
 
 # todo: the queries could be consolidated into a single set with a few more parameters
@@ -85,6 +87,21 @@ class SPARQLTools:
             insert=lambda dataset: 'INSERT DATA {{ {} }}'.format('\n'.join(['GRAPH {} {{ {} }}'.format(g.identifier.n3(), '\n'.join(['{} {} {} .'.format(t[0].n3(),t[1].n3(),t[2].n3()) for t in g.triples((None,None,None))])) for g in dataset.graphs() if not g.identifier==URIRef('urn:x-rdflib:default')])).encode(),
             ask=lambda id: 'ASK WHERE {{ {} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rd-alliance.org/ns/collections#Service> }}'.format(id.n3()).encode()
         )
+
+    def request(self, query, server):
+        if server is self.server.select:
+            response = post(server, data=query, headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
+            # print("SPARQL ERROR CODE: ", response.status_code)
+        else:
+            response = post(server, data=query, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
+        if response.status_code is not 200:
+            raise DBError()
+        else:
+            json = {'head':{'vars':[]},'results':{'bindings':[]}}
+            try:
+                json = response.json()
+            finally:
+                return SPARQLSet(json, response.status_code)
 
     def result_to_dataset(self, result):
         return result_to_dataset(result)
