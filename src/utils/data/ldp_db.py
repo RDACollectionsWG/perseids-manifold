@@ -21,7 +21,7 @@ class LDPDataBase(DBInterface):
 
     def __init__(self, server):
         self.marmotta = Marmotta(server)
-        self.sparql = SPARQLTools()
+        self.sparql = SPARQLTools(self.marmotta.sparql)
         self.RDA = RDATools(self.marmotta)
 
     def get_collection(self, id=None):
