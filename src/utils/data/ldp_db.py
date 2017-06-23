@@ -24,6 +24,20 @@ class LDPDataBase(DBInterface):
         self.sparql = SPARQLTools(self.marmotta.sparql)
         self.RDA = RDATools(self.marmotta)
 
+    def find_collection(self, cid):
+        if not isinstance(cid, list):
+            cid = [cid]
+        ids = [self.marmotta.ldp(encoder.encode(id)) for id in cid]
+        result = self.sparql.find(ids,self.RDA.ns.Collection)
+        return float(result.bindings.pop().get(Variable('size')))/len(cid)
+
+    def find_member(self, cid, mid):
+        if not isinstance(mid, list):
+            mid = [mid]
+        ids = [self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m)) for m in mid]
+        result = self.sparql.find(ids,self.RDA.ns.Member)
+        return float(result.bindings.pop().get(Variable('size')))/len(mid)
+
     def get_collection(self, id=None):
         # todo: ASK and check if collection exists
         if id is not None:
