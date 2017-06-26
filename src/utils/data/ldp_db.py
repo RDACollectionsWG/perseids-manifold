@@ -1,14 +1,15 @@
 import random, string, time
 
 import requests
-from rdflib import Dataset, Variable
+from rdflib import Dataset
+from rdflib.term import Variable
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
 
 from src.collections.models import *
 from src.members.models import *
 from src.service.models import Service
 from src.utils.conversions.rda import RDATools
-from src.utils.base.errors import NotFoundError, DBError, ForbiddenError
+from src.utils.base.errors import NotFoundError, DBError, ForbiddenError, ParseError
 from src.utils.ids.marmotta import Marmotta
 from src.utils.ids.url_encoder import encoder
 from src.utils.rdf.ldp import LDP
@@ -41,58 +42,46 @@ class LDPDataBase(DBInterface):
     def get_collection(self, id=None):
         # todo: ASK and check if collection exists
         if id is not None:
-            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.select(self.marmotta.ldp(encoder.encode(id))), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
-            if response.status_code is not 200:
-                raise DBError()
-            result = JSONResult(response.json())
-            graph = self.sparql.result_to_dataset(result).graph(self.marmotta.ldp(encoder.encode(id)))
+            result = self.sparql.select(self.marmotta.ldp(encoder.encode(id)))
+            graph = result.toDataset().graph(self.marmotta.ldp(encoder.encode(id)))
             contents = self.RDA.graph_to_collection(graph)
             if len(contents) is 0:
                 raise NotFoundError()
         else:
-            response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.list(s=self.marmotta.ldp(),p=LDP.ns.contains), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
-            if response.status_code is not 200:
-                raise DBError()
-            collections = [dct[Variable('o')] for dct in JSONResult(response.json()).bindings]
+            result = self.sparql.list(s=self.marmotta.ldp(),p=LDP.ns.contains)
+            collections = [dct[Variable('o')] for dct in result.bindings]
             contents = []
             if len(collections):
-                response = requests.post(self.marmotta.sparql.select, data=self.sparql.collections.selects(collections), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
-                if response.status_code is not 200:
-                    raise DBError()
-                result = JSONResult(response.json())
-                graphs = [self.sparql.result_to_dataset(result).graph(collection) for collection in collections]
+                result = self.sparql.select(collections)
+                graphs = [result.toDataset().graph(collection) for collection in collections]
                 for graph in graphs:
                     contents += self.RDA.graph_to_collection(graph)
         return contents
 
-    def set_collection(self, c_obj):
+    def set_collection(self, c_obj, over_write=False):
+        if isinstance(c_obj, Model):
+            c_obj = [c_obj]
+        elif not isinstance(c_obj, list):
+            raise ParseError()
         # create LD collection and declare as ldp:BasicContainer
-        c_id = encoder.encode(c_obj.id)
         ds = Dataset()
         ldp = ds.graph(identifier=LDP.ns)
-
-        collection = ds.graph(identifier=self.marmotta.ldp(c_id))
-        collection += self.RDA.collection_to_graph(c_obj)
-        ldp += LDP.add_contains(self.marmotta.ldp(), collection.identifier)
-
-        member = ds.graph(identifier=self.marmotta.ldp(c_id+'/member'))
-        ldp += LDP.add_contains(collection.identifier, member.identifier)
-        insert = self.sparql.collections.insert(ds)
-        response = requests.post(self.marmotta.sparql.update, data=insert, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
-        if response.status_code is 200:
+        for c in c_obj:
+            c_id = encoder.encode(c.id)
+            collection = ds.graph(identifier=self.marmotta.ldp(c_id))
+            collection += self.RDA.collection_to_graph(c)
+            ldp += LDP.add_contains(self.marmotta.ldp(), collection.identifier)
+            member = ds.graph(identifier=self.marmotta.ldp(c_id+'/member'))
+            ldp += LDP.add_contains(collection.identifier, member.identifier)
+        if self.sparql.insert(ds).status_code is 200:
             return c_obj
         else:
             raise DBError()
 
     def del_collection(self, id):
-        found = JSONResult(requests.post(self.marmotta.sparql.select, data=self.sparql.collections.ask(self.marmotta.ldp(encoder.encode(id))), headers={"Accept":"application/sparql-results+json","Content-Type":"application/sparql-select"}).json()).askAnswer
-        if found:
-            delete =self.sparql.collections.delete(self.marmotta.ldp(encoder.encode(id)))
-            response = requests.post(self.marmotta.sparql.update, data=delete)
-            if response.status_code is 200:
-                return True
-            else:
-                raise DBError()
+        if self.sparql.ask(self.marmotta.ldp(encoder.encode(id)), self.RDA.ns.Collection).askAnswer:
+            self.sparql.delete(self.marmotta.ldp(encoder.encode(id)))
+            return True
         else:
             raise NotFoundError()
 
