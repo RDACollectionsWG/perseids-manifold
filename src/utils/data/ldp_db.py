@@ -202,8 +202,7 @@ class LDPDataBase(DBInterface):
         service += self.RDA.service_to_graph(s_obj)
         ldp = ds.graph(identifier=LDP.ns)
         ldp += LDP.add_contains(self.marmotta.ldp(),service.identifier,False)
-        insert = self.sparql.service.insert(ds)
-        response = requests.post(self.marmotta.sparql.update, data=insert)
+        response = self.sparql.insert(ds)
         if response.status_code is 200:
             return s_obj
         else:
