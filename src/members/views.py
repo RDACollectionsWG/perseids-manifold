@@ -1,6 +1,6 @@
 import time, sys
 
-from flask import current_app
+from flask import current_app as app
 from flask import json, request
 from flask.views import MethodView
 
@@ -19,7 +19,7 @@ class MemberView(MethodView):
             return m_obj
         else:
             try:
-                m_objs = current_app.db.get_member(m_obj.id)
+                m_objs = app.db.get_member(m_obj.id)
                 return MemberResultSet([self.recurse(m, depth-1) for m in m_objs])
             except:
                 return m_obj
@@ -38,13 +38,13 @@ class MemberView(MethodView):
             if mid:
                 #if profile:
                 #    start = time.time()
-                members = current_app.db.get_member(id, mid)
+                members = app.db.get_member(id, mid)
                 #if profile:
                 #    print("GET MEMBER: ",time.time()-start)
                 result = members[0]
             else:
-                collection = current_app.db.get_collection(id).pop()
-                members = current_app.db.get_member(id)
+                collection = app.db.get_collection(id).pop()
+                members = app.db.get_member(id)
                 datatype, role, index, date_added, expand_depth, cursor = self.getParams(request.args)
                 if expand_depth is not 0:
                     members = [self.recurse(m, expand_depth) for m in members]
@@ -72,24 +72,27 @@ class MemberView(MethodView):
             obj = json.loads(request.data)
             # todo: raise parseError if
             #if not isinstance(obj, Model):
-            #    if current_app.db.get_service().providesCollectionPids:
-            #        obj += {'id': current_app.db.get_id(MemberItem)}
+            #    if app.db.get_service().providesCollectionPids:
+            #        obj += {'id': app.db.get_id(MemberItem)}
             #        obj = MemberItem(**obj)
             #if profile:
             #    start = time.time()
-            try:
-                current_app.db.get_member(id, obj.id)
+            # todo: check if ids are currently in use
+
+
+            res = app.db.find_member(id, [o.id for o in obj])
+            if res>0:
                 raise ConflictError()
-            except NotFoundError:
-                pass
             #if profile:
             #    print("CHECK EXISTING MEMBER:  ",time.time()-start)
             #    start = time.time()
             # todo change db interface to create/update? where create fails if item exists and update fails if it doesnt
-            current_app.db.set_member(id, obj)
+            app.db.set_member(id, obj)
             #if profile:
             #    print("WRITE MEMBER: ",time.time()-start)
-            return jsonify(current_app.db.get_member(id, obj.id)), 201
+
+
+            return jsonify(app.db.get_member(id, [o.id for o in obj])), 201
         except (NotFoundError, DBError, UnauthorizedError, ForbiddenError):
             raise
         except:
@@ -100,9 +103,9 @@ class MemberView(MethodView):
             posted = json.loads(request.data)
             if posted.id != mid:
                 raise ParseError()
-            if len(current_app.db.get_member(id, mid)) is not 1:
+            if len(app.db.get_member(id, mid)) is not 1:
                 raise NotFoundError()
-            current_app.db.set_member(id, posted)
+            app.db.set_member(id, posted)
             return jsonify(MemberResultSet([posted])), 200
         except (NotFoundError, DBError, UnauthorizedError):
             raise
@@ -111,7 +114,7 @@ class MemberView(MethodView):
 
     def delete(self, id, mid):
         try:
-            current_app.db.del_member(id, mid)
+            app.db.del_member(id, mid)
             return jsonify(), 200  # todo: use id, mid
         except (NotFoundError, DBError, UnauthorizedError):
             raise
@@ -131,7 +134,7 @@ class PropertiesView(MethodView):
 
     def get(self, id, mid, property):
         try:
-            result = current_app.db.get_member(id,mid).dict()
+            result = app.db.get_member(id,mid).dict()
             for key in property.split('.'):
                 result = result[key]
             return jsonify(result), 200
@@ -143,11 +146,11 @@ class PropertiesView(MethodView):
     def put(self, id, mid, property):
         try:
             posted = json.loads(request.data)['content']
-            m_dict = current_app.db.get_member(id,mid).dict()
+            m_dict = app.db.get_member(id,mid).dict()
             self.write(m_dict, property.split("."), posted)
             if m_dict.get('mappings') and not isinstance(m_dict['mappings'], Model):
                 m_dict['mappings'] = CollectionItemMappingMetadata(**m_dict['mappings'])
-            return jsonify(current_app.db.set_member(MemberItem(**m_dict))), 200
+            return jsonify(app.db.set_member(MemberItem(**m_dict))), 200
         except (NotFoundError, DBError, UnauthorizedError):
             raise
         except:
