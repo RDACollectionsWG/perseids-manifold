@@ -154,14 +154,12 @@ class RandomGenerator:
         node = URIRef(ldp_root+encoder.encode(obj.id))
         capabilities = URIRef(node+"#capabilities")
         properties = URIRef(node+"#properties")
-        description = URIRef(node+"#description")
 
         g = Graph(identifier=node)
         g.add((node, RDF.type, RDA.Collection))
         g.add((node, DCTERMS.identifier, Literal(obj.id)))
         g.add((node, RDA.hasCapabilities, capabilities))
         g.add((node, RDA.hasProperties, properties))
-        g.add((node, DCTERMS.description, description))
         g.add((capabilities, RDA.isOrdered, Literal(obj.capabilities.isOrdered)))
         g.add((capabilities, RDA.appendsToEnd, Literal(obj.capabilities.appendsToEnd)))
         g.add((capabilities, RDA.maxLength, Literal(obj.capabilities.maxLength)))
@@ -175,7 +173,13 @@ class RandomGenerator:
         g.add((properties, DCTERMS.license, Literal(obj.properties.license)))
         g.add((properties, DCTERMS.rightsHolder, URIRef(obj.properties.ownership)))
         g.add((properties, RDA.hasAccessRestrictions, Literal(obj.properties.hasAccessRestrictions)))
-        g.add((description, URIRef(description+"@something"), Literal(obj.description['something'])))
+        if hasattr(obj, "description") and isinstance(obj.description, dict):
+            description = URIRef(node+"#description")
+            g.add((node, DCTERMS.description, description))
+            if len(obj.description.items()) is 0:
+                g.add((description, RDF.type, RDA.Empty))
+            for key,value in obj.description.items():
+                g.add((description, URIRef(description+"@"+key), Literal(obj.description[key])))
         return g
 
     def graph_member(self, ldp_root, c_id, obj=None):
