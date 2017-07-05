@@ -70,6 +70,8 @@ class MemberView(MethodView):
             if not id:
                 raise NotFoundError()
             obj = json.loads(request.data)
+            if not isinstance(obj, list):
+                obj=[obj]
             # todo: raise parseError if
             #if not isinstance(obj, Model):
             #    if app.db.get_service().providesCollectionPids:
