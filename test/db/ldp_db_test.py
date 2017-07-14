@@ -40,9 +40,9 @@ class DbTests(TestCase):
             c_obj = self.mock.collection()
             id = self.db.marmotta.ldp(encoder.encode(c_obj.id))
             self.db.set_collection(c_obj)
-            response = requests.post(self.db.marmotta.sparql.select,data=self.db.sparql.collections.select(id),headers={"Accept":"application/sparql-results+json"})
+            response = self.db.sparql.select(id) # todo: figure out if using db.sparql or sparql
             #print(response.json())
-            r_obj = self.db.RDA.graph_to_collection(self.db.sparql.result_to_dataset(JSONResult(response.json())).graph(id)).pop()
+            r_obj = self.db.RDA.graph_to_collection(response.toDataset().graph(id)).pop()
             self.assertDictEqual(c_obj.dict(), r_obj.dict())
 
     def test_ldp_access_created_collection(self):
@@ -58,9 +58,10 @@ class DbTests(TestCase):
              # todo: post collections to sparql, retrieve via LDP and compare
              requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
              c_objs = [self.mock.collection() for _ in range(randint(2, 5))]
-             for c in c_objs:
-                 self.db.set_collection(c)
-             self.assertSetEqual(set([json.dumps(c) for c in c_objs]), set([json.dumps(c) for c in self.db.get_collection()]))
+             self.db.set_collection(c_objs)
+             set1 = set([json.dumps(c) for c in c_objs])
+             set2 = set([json.dumps(c) for c in self.db.get_collection()])
+             self.assertSetEqual(set1, set2)
 
     def test_ldp_access_with_ldp(self):
         with app.app_context():
@@ -97,8 +98,8 @@ class DbTests(TestCase):
              id = self.db.marmotta.ldp(encoder.encode(c_obj.id)+"/member/"+encoder.encode(m_obj.id))
              self.db.set_collection(c_obj)
              self.db.set_member(c_obj.id, m_obj)
-             response = requests.post(self.db.marmotta.sparql.select,data=self.db.sparql.members.select(id),headers={"Accept":"application/sparql-results+json"})
-             r_obj = self.db.RDA.graph_to_member(self.db.sparql.result_to_dataset(JSONResult(response.json())).graph(id)).pop()
+             response = self.db.sparql.select(id)
+             r_obj = self.db.RDA.graph_to_member(response.toDataset().graph(id)).pop()
              self.assertDictEqual(m_obj.dict(),r_obj.dict())
 
     def test_db_access_created_member(self):
