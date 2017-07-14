@@ -26,59 +26,14 @@ class DbTests(TestCase):
         if not self.server:
             raise EnvironmentError
         self.db = LDPDataBase(self.server)
-        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
+        res = requests.post(self.db.marmotta.sparql.update, data=reset_marmotta, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
         self.mock = RandomGenerator()
 
     #def test_ldp_b64encode(self):
      #   self.assertEqual(self.db.b64encode(self.server),"aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ==")
 
     def tearDown(self):
-        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
-
-    #def test_ldp_b64decode(self):
-    #    self.assertEqual(self.db.b64decode("aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ=="),self.server)
-
-    #def test_ldp_b64_roundtrip(self):
-    #    self.assertEqual(self.db.b64decode(self.db.b64encode(self.server)),self.server)
-
-    #def test_ldp_graph_to_dict(self):
-    #    self.db.graph_to_dict(graph, node, propertiesMap)
-
-    #def test_ldp_dict_to_graph(self):
-    #    assert False
-    #    self.db.dict_to_graph()
-
-    #def test_ldp_collection_to_graph(self):
-    #    assert False
-    #    self.db.collection_to_graph()
-
-    #def test_ldp_graph_to_collection(self):
-    #    assert False
-    #    self.db.graph_to_collection()
-
-    #def test_ldp_member_to_graph(self):
-    #    assert False
-    #    self.db.member_to_graph()
-
-    #def test_ldp_graph_to_member(self):
-    #    assert False
-    #    self.db.graph_to_member()
-
-    #def test_ldp_service_to_graph(self):
-    #    assert False
-    #    self.db.service_to_graph()
-
-    #def test_ldp_graph_to_service(self):
-    #    assert False
-    #    self.db.graph_to_service()
-
-    #def test_ldp_result_to_dataset(self):
-    #    assert False
-    #    self.db.result_to_dataset()
-
-    #def test_ldp_add_contains(self):
-    #    assert False
-    #    self.db.ldp_add_contains()
+        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
 
     def test_ldp_create_collection(self):
         with app.app_context():
@@ -101,6 +56,7 @@ class DbTests(TestCase):
     def test_ldp_access_multiple_collections(self):
          with app.app_context():
              # todo: post collections to sparql, retrieve via LDP and compare
+             requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
              c_objs = [self.mock.collection() for _ in range(randint(2, 5))]
              for c in c_objs:
                  self.db.set_collection(c)
