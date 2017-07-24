@@ -78,7 +78,7 @@ class CollectionTest(TestCase):
                 results = [{'out': c.post("/collections", data=json.dumps(col), content_type='application/json', follow_redirects=True), 'in': col} for col in c_dicts]
             for r in results:
                 self.assertEqual(r['out'].status_code, 201)
-                r_dict = json.loads(r['out'].data).__dict__
+                r_dict = json.loads(r['out'].data).dict()
                 self.assertEqual(json.dumps(r_dict), json.dumps(r['in']))
 
     def test_collection_delete_id(self):
