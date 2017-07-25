@@ -119,8 +119,9 @@ class MembersTest(TestCase):
         with self.app.app_context():
             c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             self.app.db.set_collection(c_obj)
-            m_dicts = [self.mock.member().__dict__ for i in range(5)]
+            m_dicts = [self.mock.member().dict() for i in range(5)]
             self.assertListEqual(self.app.db.get_member(c_obj.id), [])
+
             responses = [self.post("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members", json.dumps(m)) for m in m_dicts]
             for r in responses:
                 self.assertEqual(r.status_code, 201)
