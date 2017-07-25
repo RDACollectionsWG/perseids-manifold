@@ -54,7 +54,7 @@ class MembersTest(TestCase):
     def test_members_get_id(self):
         with self.app.app_context():
             # create collection, members
-            c_obj = self.mock.collection()
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             m_objs = [self.mock.member() for i in range(5)]
             # add collection, members
             self.app.db.set_collection(c_obj)
@@ -71,7 +71,7 @@ class MembersTest(TestCase):
     def test_members_get(self):
         with self.app.app_context():
             # create collection, members
-            c_obj = self.mock.collection()
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             m_objs = [self.mock.member() for i in range(5)]
             # add collection, members
             self.app.db.set_collection(c_obj)
@@ -91,7 +91,7 @@ class MembersTest(TestCase):
     def test_member_recursive_get(self):
         with self.app.app_context():
             # create collection, members
-            c_objs = [self.mock.collection() for i in range(5)]
+            c_objs = [self.mock.collection(description={'something':'abcdefghi123ö'}) for i in range(5)]
             m_objs = {}
             for i in [0,1,2,3]:
                 m_objs.update({c_objs[i].id:[self.mock.member() for j in range(4)]+[self.mock.member(c_objs[i+1].id)]})
@@ -117,7 +117,7 @@ class MembersTest(TestCase):
 
     def test_members_post(self):
         with self.app.app_context():
-            c_obj = self.mock.collection()
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             self.app.db.set_collection(c_obj)
             m_dicts = [self.mock.member().__dict__ for i in range(5)]
             self.assertListEqual(self.app.db.get_member(c_obj.id), [])
@@ -131,7 +131,7 @@ class MembersTest(TestCase):
 
     def test_members_post_too_many(self):
         with self.app.app_context():
-            c_obj = self.mock.collection()
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             c_obj.capabilities.maxLength = 3
             self.app.db.set_collection(c_obj)
             m_dicts = [self.mock.member().__dict__ for i in range(5)]
@@ -140,7 +140,7 @@ class MembersTest(TestCase):
 
     def test_members_put_id(self):
         with self.app.app_context():
-            c_obj = self.mock.collection()
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             self.app.db.set_collection(c_obj)
             m_objs = [self.mock.member() for i in range(5)]
             for m_obj in m_objs:
@@ -157,7 +157,7 @@ class MembersTest(TestCase):
 
     def test_members_delete_id(self):
         with self.app.app_context():
-            c_obj = self.mock.collection()
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             self.app.db.set_collection(c_obj)
             m_objs = [self.mock.member() for i in range(5)]
             for m_obj in m_objs:
@@ -169,7 +169,7 @@ class MembersTest(TestCase):
 
     def test_members_delete_unknown_id(self):
         with self.app.app_context():
-            c_obj = self.mock.collection()
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
             self.app.db.set_collection(c_obj)
             m_obj = self.mock.member()
             response = self.delete("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members/"+urllib.parse.quote_plus(m_obj.id))
