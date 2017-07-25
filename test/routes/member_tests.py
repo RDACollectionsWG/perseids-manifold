@@ -130,6 +130,19 @@ class MembersTest(TestCase):
             for i in range(len(sortedMocks)):
                 self.assertEqual(sortedMocks[i]['location'], sortedResponse[i].location)
 
+    def test_members_post_array(self):
+        with self.app.app_context():
+            c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
+            self.app.db.set_collection(c_obj)
+            m_dicts = [self.mock.member().dict() for i in range(5)]
+            self.assertListEqual(self.app.db.get_member(c_obj.id), [])
+            response = self.post("/collections/"+urllib.parse.quote_plus(c_obj.id)+"/members", json.dumps(m_dicts))
+            self.assertEqual(response.status_code, 201)
+            sortedResponse = sorted(json.loads(response.data), key=lambda x: x.location)
+            sortedMocks = sorted(m_dicts, key=lambda x: x['location'])
+            for i in range(len(sortedMocks)):
+                self.assertEqual(sortedMocks[i]['location'], sortedResponse[i].location)
+
     def test_members_post_too_many(self):
         with self.app.app_context():
             c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
