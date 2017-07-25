@@ -26,14 +26,14 @@ class MembersTest(TestCase):
         if not self.server:
             raise EnvironmentError
         self.app.db = LDPDataBase(self.server)
-        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta)
+        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
         #elf.dir = TemporaryDirectory(dir='test/data')
         #elf.app.db = FilesystemDB(self.dir.name)
         self.mock = RandomGenerator()
 
     def tearDown(self):
         #elf.dir.cleanup()
-        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta)
+        requests.post(self.app.db.marmotta.sparql.update, data=reset_marmotta, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
 
     def get(self, path):
         with self.app.test_client() as client:
