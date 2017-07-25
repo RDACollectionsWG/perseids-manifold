@@ -75,8 +75,8 @@ class MembersTest(TestCase):
             m_objs = [self.mock.member() for i in range(5)]
             # add collection, members
             self.app.db.set_collection(c_obj)
-            for m_obj in m_objs:
-                self.app.db.set_member(c_obj.id, m_obj)
+            # for m_obj in m_objs:
+            self.app.db.set_member(c_obj.id, m_objs)
             # pool = ThreadPool(50)
             # pool.map(lambda m_obj: self.app.db.set_member(c_obj.id, m_obj), m_objs)
             # GET members
