@@ -19,25 +19,30 @@ from .db import DBInterface
 profiling = False
 
 class LDPDataBase(DBInterface):
+    """
+    LDP Database class
+
+    :param self: Object
+    :type self: LDPDataBase
+    :param server: Url of Marmotta server
+    :type server: text
+
+    :ivar marmotta: Marmotta object
+    :ivar sparql: SPARQLTools object
+    :ivar RDA: RDATools object
+    """
 
     def __init__(self, server):
         self.marmotta = Marmotta(server)
         self.sparql = SPARQLTools(self.marmotta.sparql)
         self.RDA = RDATools(self.marmotta)
 
-    def find_collection(self, cid):
+    def ask_collection(self, cid):
         if not isinstance(cid, list):
             cid = [cid]
         ids = [self.marmotta.ldp(encoder.encode(id)) for id in cid]
         result = self.sparql.find(ids,self.RDA.ns.Collection)
         return float(result.bindings.pop().get(Variable('size')))/len(cid)
-
-    def find_member(self, cid, mid):
-        if not isinstance(mid, list):
-            mid = [mid]
-        ids = [self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m)) for m in mid]
-        result = self.sparql.find(ids,self.RDA.ns.Member)
-        return float(result.bindings.pop().get(Variable('size')))/len(mid)
 
     def get_collection(self, id=None):
         # todo: ASK and check if collection exists
@@ -93,6 +98,8 @@ class LDPDataBase(DBInterface):
             return c_obj
         else:
             raise ForbiddenError()
+
+
 
     def get_member(self, cid, mid=None):
         # todo: ASK and check if member exists
@@ -169,6 +176,15 @@ class LDPDataBase(DBInterface):
         self.set_member(cid, m_obj)
         return m_obj
 
+    def ask_member(self, cid, mid):
+        if not isinstance(mid, list):
+            mid = [mid]
+        ids = [self.marmotta.ldp(encoder.encode(cid)+"/member/"+encoder.encode(m)) for m in mid]
+        result = self.sparql.find(ids,self.RDA.ns.Member)
+        return float(result.bindings.pop().get(Variable('size')))/len(mid)
+
+
+
     def get_service(self):
         id = self.marmotta.ldp("service")
         response = requests.post(self.marmotta.sparql.select, data=self.sparql.service.ask(id), headers={"Accept":"application/sparql-results+json", "Content-Type":"application/sparql-select"})
@@ -207,7 +223,9 @@ class LDPDataBase(DBInterface):
             return s_obj
         else:
             raise DBError()
-    
+
+
+
     def get_id(self, type):
         id = ''.join(random.choice(string.ascii_letters) for _ in range(random.randint(10, 30)))
         if type is CollectionObject:
