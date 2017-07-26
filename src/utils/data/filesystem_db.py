@@ -35,6 +35,12 @@ class FilesystemDB(DBInterface):
         except:
             raise DBError()
 
+    def ask_collection(self, id):
+        pass
+
+    def ask_member(self, id):
+        pass
+
     def get_collection(self, cid=None):
         if cid is None:
             ids = [d for d in listdir(self.d_data) if isdir(join(self.d_data, d))]

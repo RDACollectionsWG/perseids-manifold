@@ -3,6 +3,12 @@ from .db import DBInterface
 
 class NullDB(DBInterface):
 
+    def ask_collection(self, id):
+        return 0
+
+    def ask_member(self, cid, mid):
+        return 0
+
     def get_collection(self, id=None):
         return []
 
