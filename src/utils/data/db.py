@@ -11,7 +11,7 @@ class DBMeta(abc.ABCMeta):
 class DBInterface(object, metaclass=DBMeta):
 
     @abc.abstractmethod
-    def ask_collection(self, id):
+    def ask_collection(self, c_id):
         """
         Check for existence of Collections
 
@@ -21,7 +21,7 @@ class DBInterface(object, metaclass=DBMeta):
         pass
 
     @abc.abstractmethod
-    def get_collection(self, id=None):
+    def get_collection(self, c_id=None):
         """
         Retrieve Collection data
 
@@ -41,7 +41,7 @@ class DBInterface(object, metaclass=DBMeta):
         pass
 
     @abc.abstractmethod
-    def del_collection(self, id):
+    def del_collection(self, c_id):
         """
         Delete Collection data
 
@@ -63,7 +63,7 @@ class DBInterface(object, metaclass=DBMeta):
 
 
     @abc.abstractmethod
-    def ask_member(self, cid, mid):
+    def ask_member(self, c_id, m_id):
         """
         Check for existence of MemberItems
 
@@ -74,7 +74,7 @@ class DBInterface(object, metaclass=DBMeta):
         pass
 
     @abc.abstractmethod
-    def get_member(self, cid, mid=None):
+    def get_member(self, c_id, m_id=None):
         """
         Retrieve Member data
 
@@ -139,10 +139,10 @@ class DBInterface(object, metaclass=DBMeta):
 
 
     @abc.abstractmethod
-    def get_id(self, type):
+    def get_id(self, type_class):
         """
 
-        :param type:
+        :param type_class:
         :return:
         """
         pass

@@ -35,34 +35,34 @@ class FilesystemDB(DBInterface):
         except:
             raise DBError()
 
-    def ask_collection(self, id):
+    def ask_collection(self, c_id):
         pass
 
-    def ask_member(self, id):
+    def ask_member(self, c_id, m_id):
         pass
 
-    def get_collection(self, cid=None):
-        if cid is None:
+    def get_collection(self, c_id=None):
+        if c_id is None:
             ids = [d for d in listdir(self.d_data) if isdir(join(self.d_data, d))]
             return self.get_collection(ids)
         else:
-            if not type(cid) in (type([]), type(()), type(set())):
-                cid = [cid]
-            result = [self.__load_json__(join(self.d_data, id.replace('/', '∕'), self.d_collection)) for id in cid]
+            if not type(c_id) in (type([]), type(()), type(set())):
+                c_id = [c_id]
+            result = [self.__load_json__(join(self.d_data, id.replace('/', '∕'), self.d_collection)) for id in c_id]
             return [c for c in result if c is not None]
 
     '''
         @:returns CollectionObject or Error
     '''
-    def set_collection(self,cObject):
-        filename = join(self.d_data, cObject.id.replace('/', '∕'), self.d_collection)
-        self.__write_json__(filename, cObject)
-        return cObject
+    def set_collection(self, c_obj):
+        filename = join(self.d_data, c_obj.id.replace('/', '∕'), self.d_collection)
+        self.__write_json__(filename, c_obj)
+        return c_obj
 
 
-    def del_collection(self, cid):
+    def del_collection(self, c_id):
         try:
-            filename = join(self.d_data, cid.replace('/', '∕'))
+            filename = join(self.d_data, c_id.replace('/', '∕'))
             rmtree(filename)
             return True
         except FileNotFoundError:
@@ -75,22 +75,22 @@ class FilesystemDB(DBInterface):
         self.set_collection(c_obj)
         return c_obj
 
-    def get_member(self, cid, mid=None):
-        if mid is None:
-            return self.get_member(cid, [m[:-5] for m in listdir(join(self.d_data, cid.replace('/', '∕'))) if (m.endswith('.json') and m != self.d_collection)])
+    def get_member(self, c_id, m_id=None):
+        if m_id is None:
+            return self.get_member(c_id, [m[:-5] for m in listdir(join(self.d_data, c_id.replace('/', '∕'))) if (m.endswith('.json') and m != self.d_collection)])
         else:
-            if not type(mid) in (type([]), type(()), type(set())):
-                mid = [mid]
-            return [self.__load_json__(join(self.d_data, cid.replace('/', '∕'), id.replace('/', '∕')+'.json')) for id in mid]
+            if not type(m_id) in (type([]), type(()), type(set())):
+                m_id = [m_id]
+            return [self.__load_json__(join(self.d_data, c_id.replace('/', '∕'), id.replace('/', '∕')+'.json')) for id in m_id]
 
-    def set_member(self, cid, mObject):
-        filename = join(self.d_data, cid.replace('/', '∕'), mObject.id.replace('/', '∕')+'.json')
-        self.__write_json__(filename, mObject)
-        return mObject
+    def set_member(self, c_id, m_obj):
+        filename = join(self.d_data, c_id.replace('/', '∕'), m_obj.id.replace('/', '∕')+'.json')
+        self.__write_json__(filename, m_obj)
+        return m_obj
 
-    def del_member(self, cid, mid):
+    def del_member(self, c_id, m_id):
         try:
-            filename = join(self.d_data, cid.replace('/', '∕'), mid.replace('/', '∕')+'.json')
+            filename = join(self.d_data, c_id.replace('/', '∕'), m_id.replace('/', '∕')+'.json')
             remove(filename)
             return True
         except FileNotFoundError:
@@ -98,16 +98,16 @@ class FilesystemDB(DBInterface):
         except:
             raise DBError()
 
-    def upd_member(self, cid, m_obj):
-        self.del_member(cid, m_obj.id)
-        self.set_member(cid, m_obj)
+    def upd_member(self, c_id, m_obj):
+        self.del_member(c_id, m_obj.id)
+        self.set_member(c_id, m_obj)
         return m_obj
 
     def get_service(self):
         return self.__load_json__(join(self.d_data, self.d_service))
 
-    def set_service(self, sObject):
-        self.__write_json__(join(self.d_data, self.d_service), sObject)
+    def set_service(self, s_obj):
+        self.__write_json__(join(self.d_data, self.d_service), s_obj)
 
 
     def get_id(self, type_class):
