@@ -75,10 +75,10 @@ class CollectionTest(TestCase):
         with self.app.app_context():
             c_dicts = [self.mock.collection(description={'something':'abcdefghi123ö'}).dict() for i in range(5)]
             with self.app.test_client() as c:
-                results = [{'out': c.post("/collections", data=json.dumps(col), content_type='application/json', follow_redirects=True), 'in': col} for col in c_dicts]
+                results = [{'out': c.post("/collections", data=json.dumps([col]), content_type='application/json', follow_redirects=True), 'in': col} for col in c_dicts]
             for r in results:
                 self.assertEqual(r['out'].status_code, 201)
-                r_dict = json.loads(r['out'].data).dict()
+                r_dict = json.loads(r['out'].data).pop().dict()
                 self.assertEqual(json.dumps(r_dict), json.dumps(r['in']))
 
     def test_collection_delete_id(self):

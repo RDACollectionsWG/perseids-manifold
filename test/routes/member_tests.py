@@ -168,7 +168,6 @@ class MembersTest(TestCase):
                 self.assertEqual(m_obj.id, result.id)
                 self.assertNotEqual(m_obj.location, result.location)
 
-
     def test_members_delete_id(self):
         with self.app.app_context():
             c_obj = self.mock.collection(description={'something':'abcdefghi123ö'})
