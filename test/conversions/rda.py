@@ -10,6 +10,7 @@ from test.mock import RandomGenerator
 class RDATestCase(unittest.TestCase):
 
     def setUp(self):
+        #self.maxDiff = None
         self.mock = RandomGenerator()
         self.rda = RDATools(Marmotta("http://localhost:8080/marmotta/"))
 

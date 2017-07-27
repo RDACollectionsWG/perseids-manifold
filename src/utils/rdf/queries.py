@@ -1,17 +1,17 @@
 reset_marmotta = """
-DELETE {?s ?p ?o}
+DELETE {GRAPH ?g { ?s ?p ?o }}
 INSERT {
   GRAPH <http://www.w3.org/ns/ldp#> {
-    <http://localhost:32768/marmotta/ldp> <http://www.w3.org/2000/01/rdf-schema#label> "Marmotta's LDP Root Container" .
-    <http://localhost:32768/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Resource> .
-    <http://localhost:32768/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#RDFSource> .
-    <http://localhost:32768/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Container> .
-    <http://localhost:32768/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#BasicContainer> .
-    <http://localhost:32768/marmotta/ldp> <http://www.w3.org/ns/ldp#interactionModel> <http://www.w3.org/ns/ldp#Container> .
-    <http://localhost:32768/marmotta/ldp> <http://purl.org/dc/terms/created> "2017-03-15T13:41:19.000Z" .
-    <http://localhost:32768/marmotta/ldp> <http://purl.org/dc/terms/modified> "2017-04-19T16:35:31.000Z"
+    <http://localhost:8080/marmotta/ldp> <http://www.w3.org/2000/01/rdf-schema#label> "Marmotta's LDP Root Container" .
+    <http://localhost:8080/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Resource> .
+    <http://localhost:8080/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#RDFSource> .
+    <http://localhost:8080/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Container> .
+    <http://localhost:8080/marmotta/ldp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#BasicContainer> .
+    <http://localhost:8080/marmotta/ldp> <http://www.w3.org/ns/ldp#interactionModel> <http://www.w3.org/ns/ldp#Container> .
+    <http://localhost:8080/marmotta/ldp> <http://purl.org/dc/terms/created> "2017-03-15T13:41:19.000Z" .
+    <http://localhost:8080/marmotta/ldp> <http://purl.org/dc/terms/modified> "2017-04-19T16:35:31.000Z"
   }
-  GRAPH <http://localhost:32768/marmotta/context/cache> {
+  GRAPH <http://localhost:8080/marmotta/context/cache> {
     <http://www.w3.org/ns/ldp#> <http://purl.org/dc/terms/created> "2015-02-26" .
     <http://www.w3.org/ns/ldp#> <http://purl.org/dc/terms/description> "Vocabulary URIs defined in the Linked Data Platform (LDP) namespace." .
     <http://www.w3.org/ns/ldp#> <http://purl.org/dc/terms/publisher> <http://www.w3.org/data#W3C> .
@@ -29,4 +29,3 @@ INSERT {
   }
 } WHERE {?s ?p ?o}
 """
-

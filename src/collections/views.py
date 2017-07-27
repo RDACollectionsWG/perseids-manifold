@@ -54,19 +54,18 @@ class CollectionsView(MethodView):
                 raise NotFoundError()  # 404
             if app.service.enforcesAccess and not app.acl.get_permission(app.acl.get_user()).x:
                 raise UnauthorizedError()
-            obj = json.loads(request.data)
-            if not isinstance(obj, Model):
-                if app.db.get_service().providesCollectionPids:
-                    obj += {'id': app.mint.get_id(CollectionObject)}
-                    obj = CollectionObject(**obj)
-            try:
-                app.db.get_collection(obj.id)
+            objs = json.loads(request.data)
+            if not isinstance(objs, list):
+                raise ParseError()
+
+            pids = app.db.get_service().providesCollectionPids
+            if pids:
+                    objs = [CollectionObject(**obj.update({'id': app.mint.get_id(CollectionObject)})) if isinstance(obj, dict) else obj for obj in objs]
+            if app.db.ask_collection([obj.id for obj in objs]):
                 raise ConflictError()
-            except NotFoundError as e:
-                pass
-            app.db.set_collection(obj)
-            return jsonify(app.db.get_collection(obj.id).pop()), 201
-        except (NotFoundError, DBError, UnauthorizedError):
+            app.db.set_collection(objs)
+            return jsonify(objs), 201
+        except (NotFoundError, DBError, UnauthorizedError, ConflictError):
             raise
         except:
             raise ParseError()  # 400

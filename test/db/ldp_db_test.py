@@ -26,68 +26,23 @@ class DbTests(TestCase):
         if not self.server:
             raise EnvironmentError
         self.db = LDPDataBase(self.server)
-        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
+        res = requests.post(self.db.marmotta.sparql.update, data=reset_marmotta, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
         self.mock = RandomGenerator()
 
     #def test_ldp_b64encode(self):
      #   self.assertEqual(self.db.b64encode(self.server),"aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ==")
 
     def tearDown(self):
-        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
-
-    #def test_ldp_b64decode(self):
-    #    self.assertEqual(self.db.b64decode("aHR0cDovL2xvY2FsaG9zdDozMjc2OC9tYXJtb3R0YQ=="),self.server)
-
-    #def test_ldp_b64_roundtrip(self):
-    #    self.assertEqual(self.db.b64decode(self.db.b64encode(self.server)),self.server)
-
-    #def test_ldp_graph_to_dict(self):
-    #    self.db.graph_to_dict(graph, node, propertiesMap)
-
-    #def test_ldp_dict_to_graph(self):
-    #    assert False
-    #    self.db.dict_to_graph()
-
-    #def test_ldp_collection_to_graph(self):
-    #    assert False
-    #    self.db.collection_to_graph()
-
-    #def test_ldp_graph_to_collection(self):
-    #    assert False
-    #    self.db.graph_to_collection()
-
-    #def test_ldp_member_to_graph(self):
-    #    assert False
-    #    self.db.member_to_graph()
-
-    #def test_ldp_graph_to_member(self):
-    #    assert False
-    #    self.db.graph_to_member()
-
-    #def test_ldp_service_to_graph(self):
-    #    assert False
-    #    self.db.service_to_graph()
-
-    #def test_ldp_graph_to_service(self):
-    #    assert False
-    #    self.db.graph_to_service()
-
-    #def test_ldp_result_to_dataset(self):
-    #    assert False
-    #    self.db.result_to_dataset()
-
-    #def test_ldp_add_contains(self):
-    #    assert False
-    #    self.db.ldp_add_contains()
+        requests.post(self.db.marmotta.sparql.update, data=reset_marmotta, headers={"Content-Type":"application/sparql-update; charset=utf-8"})
 
     def test_ldp_create_collection(self):
         with app.app_context():
             c_obj = self.mock.collection()
             id = self.db.marmotta.ldp(encoder.encode(c_obj.id))
             self.db.set_collection(c_obj)
-            response = requests.post(self.db.marmotta.sparql.select,data=self.db.sparql.collections.select(id),headers={"Accept":"application/sparql-results+json"})
+            response = self.db.sparql.select(id) # todo: figure out if using db.sparql or sparql
             #print(response.json())
-            r_obj = self.db.RDA.graph_to_collection(self.db.sparql.result_to_dataset(JSONResult(response.json())).graph(id)).pop()
+            r_obj = self.db.RDA.graph_to_collection(response.toDataset().graph(id)).pop()
             self.assertDictEqual(c_obj.dict(), r_obj.dict())
 
     def test_ldp_access_created_collection(self):
@@ -101,10 +56,12 @@ class DbTests(TestCase):
     def test_ldp_access_multiple_collections(self):
          with app.app_context():
              # todo: post collections to sparql, retrieve via LDP and compare
+             requests.post(self.db.marmotta.sparql.update, data=reset_marmotta)
              c_objs = [self.mock.collection() for _ in range(randint(2, 5))]
-             for c in c_objs:
-                 self.db.set_collection(c)
-             self.assertSetEqual(set([json.dumps(c) for c in c_objs]), set([json.dumps(c) for c in self.db.get_collection()]))
+             self.db.set_collection(c_objs)
+             set1 = set([json.dumps(c) for c in c_objs])
+             set2 = set([json.dumps(c) for c in self.db.get_collection()])
+             self.assertSetEqual(set1, set2)
 
     def test_ldp_access_with_ldp(self):
         with app.app_context():
@@ -141,8 +98,8 @@ class DbTests(TestCase):
              id = self.db.marmotta.ldp(encoder.encode(c_obj.id)+"/member/"+encoder.encode(m_obj.id))
              self.db.set_collection(c_obj)
              self.db.set_member(c_obj.id, m_obj)
-             response = requests.post(self.db.marmotta.sparql.select,data=self.db.sparql.members.select(id),headers={"Accept":"application/sparql-results+json"})
-             r_obj = self.db.RDA.graph_to_member(self.db.sparql.result_to_dataset(JSONResult(response.json())).graph(id)).pop()
+             response = self.db.sparql.select(id)
+             r_obj = self.db.RDA.graph_to_member(response.toDataset().graph(id)).pop()
              self.assertDictEqual(m_obj.dict(),r_obj.dict())
 
     def test_db_access_created_member(self):
