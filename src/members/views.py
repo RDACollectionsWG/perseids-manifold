@@ -82,7 +82,7 @@ class MemberView(MethodView):
             # todo: check if ids are currently in use
 
 
-            res = app.db.find_member(id, [o.id for o in obj])
+            res = app.db.ask_member(id, [o.id for o in obj])
             if res>0:
                 raise ConflictError()
             #if profile:
@@ -95,7 +95,7 @@ class MemberView(MethodView):
 
 
             return jsonify(app.db.get_member(id, [o.id for o in obj])), 201
-        except (NotFoundError, DBError, UnauthorizedError, ForbiddenError):
+        except (NotFoundError, DBError, UnauthorizedError, ForbiddenError, ConflictError):
             raise
         except:
             raise ParseError()
