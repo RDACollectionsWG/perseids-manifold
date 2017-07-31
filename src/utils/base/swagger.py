@@ -1,7 +1,22 @@
 class swagger:
 
     @classmethod
-    def json(self, schemes, host, port, base_path):
+    def index(cls, url):
+        return """<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="x-ua-compatible" content="IE=edge">
+        <title>Swagger UI</title>
+    </head>
+
+    <body>
+        <iframe  style="position:fixed; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;" src="http://rdacollectionswg.github.io/apidocs/index.html?url={}"></iframe>
+    </body>
+</html>""".format(url.replace("/","%2F")).encode()
+
+    @classmethod
+    def json(cls, schemes, host, port, base_path):
         return """{{
     "swagger": "2.0",
     "info": {{

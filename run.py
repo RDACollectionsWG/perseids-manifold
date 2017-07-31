@@ -35,7 +35,10 @@ for (url, kwargs) in r_service + r_collections + r_members:
     app.add_url_rule(url, **kwargs)
 
 def index():
-    return send_from_directory("www","index.html")
+    i = swagger.index(request.url+"apidocs" if request.url.endswith("/") else request.url+"/apidocs")
+    r = make_response(i)
+    r.mimetype = 'text/html'
+    return r
 app.add_url_rule("/", methods=["GET"], view_func=index)
 
 def apidocs():
