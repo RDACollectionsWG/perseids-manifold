@@ -1,4 +1,4 @@
-import random, string, time
+import random, string
 
 import requests
 from rdflib import Dataset
@@ -15,8 +15,6 @@ from src.utils.ids.url_encoder import encoder
 from src.utils.rdf.ldp import LDP
 from src.utils.rdf.sparql import SPARQLTools
 from .db import DBInterface
-
-profiling = False
 
 class LDPDataBase(DBInterface):
     """
@@ -58,7 +56,8 @@ class LDPDataBase(DBInterface):
             contents = []
             if len(collections):
                 result = self.sparql.select(collections)
-                graphs = [result.toDataset().graph(collection) for collection in collections]
+                ds = result.toDataset()
+                graphs = [ds.graph(collection) for collection in collections]
                 for graph in graphs:
                     contents += self.RDA.graph_to_collection(graph)
         return contents
@@ -78,7 +77,8 @@ class LDPDataBase(DBInterface):
             ldp += LDP.add_contains(self.marmotta.ldp(), collection.identifier)
             member = ds.graph(identifier=self.marmotta.ldp(c_id+'/member'))
             ldp += LDP.add_contains(collection.identifier, member.identifier)
-        if self.sparql.insert(ds).status_code is 200:
+        ins = self.sparql.insert(ds)
+        if ins.status_code is 200:
             return c_obj
         else:
             raise DBError()
