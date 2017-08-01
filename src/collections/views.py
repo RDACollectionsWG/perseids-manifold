@@ -1,10 +1,12 @@
 from flask import request, json, redirect, current_app as app
 from flask.views import MethodView
 from src.utils.base.models import Model
+from urllib.parse import urlparse
 
 from src.collections.models import CollectionResultSet, CollectionObject
 from src.members.models import MemberResultSet, MemberItem
 from src.utils.base.errors import *
+from src.utils.data.cursor import cursor
 
 
 def dict_subset(dict1, dict2):
@@ -29,6 +31,8 @@ class CollectionsView(MethodView):
                 collections = app.db.get_collection(id)
                 result = collections[0]
             else:
+                next = None
+                prev = None
                 model_type = request.args.get("f_modelType")
                 member_type = request.args.get("f_memberType")
                 ownership = request.args.get("f_ownership")
@@ -41,7 +45,16 @@ class CollectionsView(MethodView):
                     collections = [c for c in collections if c.capabilities.restrictedToType == member_type]
                 if ownership:
                     collections = [c for c in collections if c.properties.ownership == ownership]
-                result = CollectionResultSet(collections)
+                if request.args.get("cursor"):
+                    cstr = request.args.get("cursor")
+                    crsr = cursor.fromString(cstr)
+                    if len(collections)>crsr.end:
+                        next = crsr.next()
+                    if crsr.start:
+                        prev = crsr.prev()
+                    collections = collections[crsr.start:crsr.end]
+                    print(urlparse(request.url))
+                result = CollectionResultSet(collections, prevCursor=(request.url.replace("cursor="+cstr,"cursor="+prev.toString()) if prev else None), nextCursor=(request.url.replace("cursor="+cstr,"cursor="+next.toString()) if next else None))
             return jsonify(result), 200
         except (NotFoundError, DBError, UnauthorizedError):
             raise
