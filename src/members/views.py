@@ -5,6 +5,7 @@ from flask import json, request
 from flask.views import MethodView
 
 from src.utils.base.errors import *
+from src.utils.data.cursor import cursor
 from .models import *
 
 profile = False
@@ -30,8 +31,8 @@ class MemberView(MethodView):
         index = request.args.get("f_index")
         date_added = request.args.get("f_dateAdded")
         expand_depth = int(request.args.get("expandDepth") or 0)
-        cursor = request.args.get("cursor")
-        return [datatype, role, index, date_added, expand_depth, cursor]
+        cursor_string = request.args.get("cursor")
+        return [datatype, role, index, date_added, expand_depth, cursor_string]
 
     def get(self, id, mid=None):
         try:
@@ -43,9 +44,11 @@ class MemberView(MethodView):
                 #    print("GET MEMBER: ",time.time()-start)
                 result = members[0]
             else:
+                next = None
+                prev = None
                 collection = app.db.get_collection(id).pop()
                 members = app.db.get_member(id)
-                datatype, role, index, date_added, expand_depth, cursor = self.getParams(request.args)
+                datatype, role, index, date_added, expand_depth, cursor_string = self.getParams(request.args)
                 if expand_depth is not 0:
                     members = [self.recurse(m, expand_depth) for m in members]
                 if datatype:
@@ -58,7 +61,14 @@ class MemberView(MethodView):
                     members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
                 if collection.capabilities.isOrdered:
                     members = sorted(members, key=lambda m: m.mappings.index if hasattr(m, "mappings") and hasattr(m.mappings, "index") else sys.maxsize)
-                result = MemberResultSet(members)
+                if cursor_string:
+                    crsr = cursor.fromString(cursor_string)
+                    if len(members)>crsr.end:
+                        next = crsr.next()
+                    if crsr.start:
+                        prev = crsr.prev()
+                    members = members[crsr.start:crsr.end]
+                result = MemberResultSet(members, prevCursor=(request.url.replace("cursor="+cursor_string,"cursor="+prev.toString()) if prev else None), nextCursor=(request.url.replace("cursor="+cursor_string,"cursor="+next.toString()) if next else None))
             return jsonify(result), 200
         except (NotFoundError, DBError, UnauthorizedError):
             raise
