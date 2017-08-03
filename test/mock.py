@@ -1,7 +1,7 @@
 import random, string, json, datetime
 
 from rdflib import URIRef, Literal, Graph
-from rdflib.namespace import RDF, DCTERMS
+from rdflib.namespace import RDF, DCTERMS, OWL
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
 
 from run import app
@@ -177,7 +177,7 @@ class RandomGenerator:
             description = URIRef(node+"#description")
             g.add((node, DCTERMS.description, description))
             if len(obj.description.items()) is 0:
-                g.add((description, RDF.type, RDA.Empty))
+                g.add((description, RDF.type, OWL.Nothing))
             for key,value in obj.description.items():
                 g.add((description, URIRef(description+"@"+key), Literal(obj.description[key])))
         return g
