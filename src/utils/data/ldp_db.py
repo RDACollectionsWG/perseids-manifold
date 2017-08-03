@@ -8,7 +8,8 @@ from rdflib.plugins.sparql.results.jsonresults import JSONResult
 from src.collections.models import *
 from src.members.models import *
 from src.service.models import Service
-from src.utils.conversions.rda import RDATools
+from src.utils.conversions.rda import RDATools, RDA
+from src.utils.conversions.rdf import MappingTool
 from src.utils.base.errors import NotFoundError, DBError, ForbiddenError, ParseError
 from src.utils.ids.marmotta import Marmotta
 from src.utils.ids.url_encoder import encoder
@@ -33,7 +34,7 @@ class LDPDataBase(DBInterface):
     def __init__(self, server):
         self.marmotta = Marmotta(server)
         self.sparql = SPARQLTools(self.marmotta.sparql)
-        self.RDA = RDATools(self.marmotta)
+        self.RDA = MappingTool(RDA, RDATools)
 
     def ask_collection(self, c_id):
         if not isinstance(c_id, list):
@@ -47,7 +48,7 @@ class LDPDataBase(DBInterface):
         if c_id is not None:
             result = self.sparql.select(self.marmotta.ldp(encoder.encode(c_id)))
             graph = result.toDataset().graph(self.marmotta.ldp(encoder.encode(c_id)))
-            contents = self.RDA.graph_to_collection(graph)
+            contents = self.RDA.graph_to_object(graph)
             if len(contents) is 0:
                 raise NotFoundError()
         else:
@@ -59,7 +60,7 @@ class LDPDataBase(DBInterface):
                 ds = result.toDataset()
                 graphs = [ds.graph(collection) for collection in collections]
                 for graph in graphs:
-                    contents += self.RDA.graph_to_collection(graph)
+                    contents += self.RDA.graph_to_object(graph)
         return contents
 
     def set_collection(self, c_obj, over_write=False):
@@ -73,7 +74,7 @@ class LDPDataBase(DBInterface):
         for c in c_obj:
             c_id = encoder.encode(c.id)
             collection = ds.graph(identifier=self.marmotta.ldp(c_id))
-            collection += self.RDA.collection_to_graph(c)
+            collection += self.RDA.object_to_graph(collection.identifier, c)
             ldp += LDP.add_contains(self.marmotta.ldp(), collection.identifier)
             member = ds.graph(identifier=self.marmotta.ldp(c_id+'/member'))
             ldp += LDP.add_contains(collection.identifier, member.identifier)
@@ -120,7 +121,7 @@ class LDPDataBase(DBInterface):
             dataset = self.sparql.select(members).toDataset()
             graphs = [dataset.graph(member) for member in members]
             for graph in graphs:
-                contents += self.RDA.graph_to_member(graph)
+                contents += self.RDA.graph_to_object(graph)
         if m_id is not None and len(contents) is 0:
             raise NotFoundError()
         return contents
@@ -152,7 +153,7 @@ class LDPDataBase(DBInterface):
         for m in m_obj:
             m_id = self.marmotta.ldp(encoder.encode(c_id)+"/member/"+encoder.encode(m.id))
             member = ds.graph(identifier=m_id)
-            member += self.RDA.member_to_graph(c_id,m)
+            member += self.RDA.object_to_graph(member.identifier,m)
             ldp += LDP.add_contains(c_ldp_id+"/member",m_id,False)
         res = self.sparql.insert(ds)
         if res.status_code is not 200:
@@ -196,8 +197,8 @@ class LDPDataBase(DBInterface):
             if response.status_code is not 200:
                 raise DBError()
             ds =self.sparql.result_to_dataset(JSONResult(response.json()))
-            s_obj =self.RDA.graph_to_service(ds.graph(id))
-            return s_obj
+            s_obj = self.RDA.graph_to_object(ds.graph(id))
+            return s_obj.pop()
         else:
             return Service(**{
                 "providesCollectionPids": False,
@@ -215,7 +216,7 @@ class LDPDataBase(DBInterface):
     def set_service(self, s_obj):
         ds = Dataset()
         service = ds.graph(identifier=self.marmotta.ldp("service"))
-        service += self.RDA.service_to_graph(s_obj)
+        service += self.RDA.object_to_graph(service.identifier, s_obj)
         ldp = ds.graph(identifier=LDP.ns)
         ldp += LDP.add_contains(self.marmotta.ldp(),service.identifier,False)
         response = self.sparql.insert(ds)

@@ -42,7 +42,7 @@ class DbTests(TestCase):
             self.db.set_collection(c_obj)
             response = self.db.sparql.select(id) # todo: figure out if using db.sparql or sparql
             #print(response.json())
-            r_obj = self.db.RDA.graph_to_collection(response.toDataset().graph(id)).pop()
+            r_obj = self.db.RDA.graph_to_object(response.toDataset().graph(id)).pop()
             self.assertDictEqual(c_obj.dict(), r_obj.dict())
 
     def test_ldp_access_created_collection(self):
@@ -69,7 +69,7 @@ class DbTests(TestCase):
             c_obj = self.mock.collection()
             self.db.set_collection(c_obj)
             g = Dataset().parse(self.db.marmotta.ldp(encoder.encode(c_obj.id)), format="n3")
-            r_obj = self.db.RDA.graph_to_collection(g).pop()
+            r_obj = self.db.RDA.graph_to_object(g).pop()
             self.assertDictEqual(c_obj.dict(), r_obj.dict())
 
     def test_ldp_delete_created_collection(self):
@@ -99,7 +99,7 @@ class DbTests(TestCase):
              self.db.set_collection(c_obj)
              self.db.set_member(c_obj.id, m_obj)
              response = self.db.sparql.select(id)
-             r_obj = self.db.RDA.graph_to_member(response.toDataset().graph(id)).pop()
+             r_obj = self.db.RDA.graph_to_object(response.toDataset().graph(id)).pop()
              self.assertDictEqual(m_obj.dict(),r_obj.dict())
 
     def test_db_access_created_member(self):

@@ -5,7 +5,7 @@ class DBMeta(abc.ABCMeta):
         cls = super().__new__(mcls, classname, bases, cls_dict)
         for name, member in cls_dict.items():
             if not getattr(member, '__doc__'):
-                member.__doc__ = getattr(bases[-1], name).__doc__ if hasattr(bases[-1], name) else None
+                member.__doc__ = getattr(bases[-1], name).__doc__ if (len(bases) and hasattr(bases[-1], name)) else None
         return cls
 
 class DBInterface(object, metaclass=DBMeta):
