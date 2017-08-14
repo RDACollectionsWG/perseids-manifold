@@ -23,18 +23,38 @@ class SPARQLSet(JSONResult):
     def toDataset(self):
         return result_to_dataset(self)
 
+class Bind:
+    def __init__(self, variable, value):
+        self.value = value
+        self.variable = variable
+
+    def n3(self):
+        return "BIND({} as {})".format(self.value.n3(), self.variable.n3())
+
+class Filter:
+    def __init__(self, s=Variable('s'), p=Variable('p'), o=Variable('o')):
+        self.s = s
+        self.p = p
+        self.o = o
+
+    def n3(self):
+        return "{} {} {} .".format(self.s.n3(), self.p.n3(), self.o.n3())
+
 class SPARQLTools:
 
     def __init__(self, server):
         self.server = server
         self.queries=Struct(
             # todo: same
-            list=lambda g=None, s=None, p=None, o=None: '''
+            list=lambda binds=[], filters=[]: '''
                 SELECT ?g ?s ?p ?o WHERE {{
+                {}
                 {}
                 GRAPH ?g {{ ?s ?p ?o }}
                 }}
-            '''.format('\n'.join(['BIND ({} as ?{})'.format(v.n3(),k) for k,v in {'g':g, 's':s, 'p':p, 'o':o}.items() if v is not None])).encode(),
+            '''.format(
+                '\n'.join([b.n3() for b in binds]),
+                '\n'.join([f.n3() for f in filters])).encode(),
             # todo: pattern same
             delete=lambda id: '''
                 DELETE {{GRAPH ?grph {{?sub ?pred ?obj}} }} WHERE {{
@@ -50,13 +70,6 @@ class SPARQLTools:
                 GRAPH ?g {{ ?s ?p ?o }}
                 }}
             '''.format(' '.join([i.n3() for i in ids])).encode(),
-            # todo: remove?
-            selectddd=lambda id: '''SELECT ?g ?s ?p ?o WHERE {{
-                BIND("^{}($|/member.*)" AS ?pattern)
-                GRAPH ?g {{ ?s ?p ?o }}
-                FILTER(REGEX(STR(?g), ?pattern) || REGEX(STR(?s), ?pattern) || REGEX(STR(?o), ?pattern))
-                }}
-            '''.format(id).encode(),
             # todo: same
             insert=lambda dataset: '''
                 INSERT DATA {{ {} }}
@@ -103,10 +116,10 @@ class SPARQLTools:
             finally:
                 return SPARQLSet(json, response.status_code)
 
-    def list(self, g=None, s=None, p=None, o=None):
-        if not (g or s or p or o):
+    def list(self, binds=[], filters=[]):
+        if not isinstance(binds, list) and not isinstance(filters, list):
             raise DBError()
-        query=self.queries.list(g,s,p,o)
+        query=self.queries.list(binds, filters)
         return self.request(query, self.server.select)
 
     def select(self, ids):
