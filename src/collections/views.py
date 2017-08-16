@@ -22,7 +22,6 @@ def dict_subset(dict1, dict2):
 
 class CollectionsView(MethodView):
     def get(self, id=None):
-        # todo: pagination
         # todo: maxExp
         try:
             if id:
@@ -36,15 +35,13 @@ class CollectionsView(MethodView):
                 model_type = request.args.get("f_modelType")
                 member_type = request.args.get("f_memberType")
                 ownership = request.args.get("f_ownership")
-                collections = app.db.get_collection()
+                filter = [f for f in [{'type': CollectionObject, 'path': ["properties", "modelType"], 'value': model_type},
+                {'type': CollectionObject, 'path': ["properties", "ownership"], 'value': ownership},
+                {'type': MemberItem, 'path': ["datatype"], 'value': member_type}] if f.get('value') is not None]
+                collections = app.db.get_collection(filter=filter)
+
                 if app.service.enforcesAccess:
                     collections = [c for c in collections if app.acl.get_permission(app.acl.get_user(), c.id).r]
-                if model_type:
-                    collections = [c for c in collections if c.properties.modelType == model_type]
-                if member_type:
-                    collections = [c for c in collections if c.capabilities.restrictedToType == member_type]
-                if ownership:
-                    collections = [c for c in collections if c.properties.ownership == ownership]
                 if request.args.get("cursor"):
                     cstr = request.args.get("cursor")
                     crsr = cursor.fromString(cstr)
@@ -53,7 +50,6 @@ class CollectionsView(MethodView):
                     if crsr.start:
                         prev = crsr.prev()
                     collections = collections[crsr.start:crsr.end]
-                    print(urlparse(request.url))
                 result = CollectionResultSet(collections, prevCursor=(request.url.replace("cursor="+cstr,"cursor="+prev.toString()) if prev else None), nextCursor=(request.url.replace("cursor="+cstr,"cursor="+next.toString()) if next else None))
             return jsonify(result), 200
         except (NotFoundError, DBError, UnauthorizedError):
