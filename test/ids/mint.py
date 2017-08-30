@@ -17,7 +17,7 @@ class MintTest(TestCase):
         with self.assertRaises(TypeError) as context:
             mint.get_id(CollectionCapabilities)
 
-    def test_remote_generator(self):
-        mint = RemoteGenerator("http://localhost/remote_generator_test/{}")
-        with self.assertRaises(ConnectionError) as context:
-            mint.get_id(CollectionObject)
+    #def test_remote_generator(self):
+    #    mint = RemoteGenerator("http://localhost/remote_generator_test/{}")
+    #    with self.assertRaises(ConnectionError) as context:
+    #        mint.get_id(CollectionObject)
