@@ -1,3 +1,4 @@
+import datetime
 from random import randint
 
 from src.utils.base.errors import ModelError
@@ -29,16 +30,16 @@ class CollectionCapabilities(Model):
                  appendsToEnd=None,
                  supportsRoles=None,
                  membershipIsMutable=None,
-                 metadataIsMutable=None,
+                 propertiesAreMutable=None,
                  restrictedToType=None,
                  maxLength=None):
-        if any(map(lambda x: x is None, [isOrdered,  appendsToEnd, supportsRoles, membershipIsMutable, metadataIsMutable, restrictedToType, maxLength])):
+        if any(map(lambda x: x is None, [isOrdered,  appendsToEnd, supportsRoles, membershipIsMutable, propertiesAreMutable, restrictedToType, maxLength])):
             raise ModelError()
         self.isOrdered = isOrdered
         self.supportsRoles = supportsRoles
         self.appendsToEnd = appendsToEnd
         self.membershipIsMutable = membershipIsMutable
-        self.metadataIsMutable = metadataIsMutable
+        self.propertiesAreMutable = propertiesAreMutable
         self.restrictedToType = restrictedToType
         self.maxLength = maxLength
 
@@ -50,7 +51,8 @@ class CollectionProperties(Model):
                  modelType=None,
                  hasAccessRestrictions=None,
                  memberOf=None,
-                 descriptionOntology=None):
+                 descriptionOntology=None,
+                 dateCreated=None):
         if any(map(lambda x: x is None, [ownership, license, modelType, hasAccessRestrictions, descriptionOntology])):
             raise ModelError()
         self.ownership = ownership
@@ -59,6 +61,7 @@ class CollectionProperties(Model):
         self.hasAccessRestrictions = hasAccessRestrictions
         self.descriptionOntology = descriptionOntology
         self.memberOf = []
+        self.dateCreated = dateCreated or datetime.datetime.now().isoformat()
         if memberOf is not None:
             self.memberOf = sorted(memberOf)
 

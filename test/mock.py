@@ -18,11 +18,12 @@ class RandomGenerator:
 
     def collection(self,
                    id=None,
+                   dateCreated=None,
                    isOrdered=False,
                    appendsToEnd=False,
                    supportsRoles=True,
                    membershipIsMutable=True,
-                   metatdataIsMutable=True,
+                   propertiesAreMutable=True,
                    restrictedToType="",
                    maxLength=-1,
                    ownership="http://example.org/me",
@@ -41,7 +42,7 @@ class RandomGenerator:
                     "appendsToEnd": appendsToEnd,
                     "supportsRoles": supportsRoles,
                     "membershipIsMutable": membershipIsMutable,
-                    "metadataIsMutable": metatdataIsMutable,
+                    "propertiesAreMutable": propertiesAreMutable,
                     "restrictedToType": restrictedToType,
                     "maxLength": maxLength
                 }),
@@ -51,7 +52,8 @@ class RandomGenerator:
                     "modelType": modelType,
                     "hasAccessRestrictions": hasAccessRestrictions,
                     "memberOf": memberOf,
-                    "descriptionOntology": descriptionOntology
+                    "descriptionOntology": descriptionOntology,
+                    "dateCreated":dateCreated
                 }),
                 "description": description
             })
@@ -105,8 +107,8 @@ class RandomGenerator:
             "isOrdered": true,
             "appendsToEnd": false,
             "supportsRoles": false,
+            "propertiesAreMutable": true,
             "membershipIsMutable": true,
-            "metadataIsMutable": true,
             "restrictedToType": "",
             "maxLength": 5
           },
@@ -116,7 +118,8 @@ class RandomGenerator:
             "modelType": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md",
             "hasAccessRestrictions": false,
             "memberOf": [],
-            "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md"
+            "descriptionOntology": "https://github.com/perseids-project/CITE-JSON-LD/blob/master/templates/img/SCHEMA.md",
+            "dateCreated": ""
           },
           "description": {
             "something": "new"
@@ -164,7 +167,7 @@ class RandomGenerator:
         g.add((capabilities, RDA.appendsToEnd, Literal(obj.capabilities.appendsToEnd)))
         g.add((capabilities, RDA.maxLength, Literal(obj.capabilities.maxLength)))
         g.add((capabilities, RDA.membershipIsMutable, Literal(obj.capabilities.membershipIsMutable)))
-        g.add((capabilities, RDA.metadataIsMutable, Literal(obj.capabilities.metadataIsMutable)))
+        g.add((capabilities, RDA.propertiesAreMutable, Literal(obj.capabilities.propertiesAreMutable)))
         g.add((capabilities, RDA.restrictedToType, Literal(obj.capabilities.restrictedToType)))
         g.add((capabilities, RDA.supportsRoles, Literal(obj.capabilities.supportsRoles)))
         g.add((properties, RDA.memberOf, RDF.nil))
@@ -173,6 +176,7 @@ class RandomGenerator:
         g.add((properties, DCTERMS.license, Literal(obj.properties.license)))
         g.add((properties, DCTERMS.rightsHolder, URIRef(obj.properties.ownership)))
         g.add((properties, RDA.hasAccessRestrictions, Literal(obj.properties.hasAccessRestrictions)))
+        g.add((properties, RDA.dateCreated, Literal(obj.properties.dateCreated)))
         if hasattr(obj, "description") and isinstance(obj.description, dict):
             description = URIRef(node+"#description")
             g.add((node, DCTERMS.description, description))
@@ -731,7 +735,24 @@ class RandomGenerator:
         "type" : "uri",
         "value" : "http://rd-alliance.org/ns/collections#descriptionOntology"
       }}
-    }} ]
+    }}, {{
+      "o" : {{
+        "type" : "literal",
+        "value" : "{obj.properties.dateCreated}"
+      }},
+      "g" : {{
+        "type" : "uri",
+        "value" : "{ldp}"
+      }},
+      "s" : {{
+        "type" : "uri",
+        "value" : "{ldp}#properties"
+      }},
+      "p" : {{
+        "type" : "uri",
+        "value" : "http://rd-alliance.org/ns/collections#dateCreated"
+      }}
+    }}  ]
   }}
 }}
         """.format(obj=obj, ldp=ldp, ldp_root=ldp_root)))

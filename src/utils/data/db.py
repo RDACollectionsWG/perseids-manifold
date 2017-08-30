@@ -21,7 +21,7 @@ class DBInterface(object, metaclass=DBMeta):
         pass
 
     @abc.abstractmethod
-    def get_collection(self, c_id=None):
+    def get_collection(self, c_id=None, filter=[]):
         """
         Retrieve Collection data
 
@@ -74,7 +74,7 @@ class DBInterface(object, metaclass=DBMeta):
         pass
 
     @abc.abstractmethod
-    def get_member(self, c_id, m_id=None):
+    def get_member(self, c_id, m_id=None, filter=[]):
         """
         Retrieve Member data
 

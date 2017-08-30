@@ -46,19 +46,17 @@ class MemberView(MethodView):
             else:
                 next = None
                 prev = None
-                collection = app.db.get_collection(id).pop()
-                members = app.db.get_member(id)
                 datatype, role, index, date_added, expand_depth, cursor_string = self.getParams(request.args)
+                filter = [f for f in [
+                    {'type': MemberItem, 'path':['datatype'], 'value':datatype},
+                    {'type': MemberItem, 'path':['mappings', 'role'], 'value':role},
+                    {'type': MemberItem, 'path':['mappings', 'index'], 'value':index},
+                    {'type': MemberItem, 'path':['mappings', 'dateAdded'], 'value':date_added}
+                ] if f.get('value') is not None]
+                collection = app.db.get_collection(id).pop()
+                members = app.db.get_member(id,filter=filter)
                 if expand_depth is not 0:
                     members = [self.recurse(m, expand_depth) for m in members]
-                if datatype:
-                    members = [m for m in members if m.datatype == datatype]
-                if role and collection.capabilities.supportsRoles:
-                    members = [m for m in members if hasattr(m,'mappings') and m.mappings.role == role]
-                if index:
-                    members = [m for m in members if hasattr(m,'mappings') and m.mappings.index == index]
-                if date_added:
-                    members = [m for m in members if hasattr(m,'mappings') and m.mappings.dateAdded == date_added]
                 if collection.capabilities.isOrdered:
                     members = sorted(members, key=lambda m: m.mappings.index if hasattr(m, "mappings") and hasattr(m.mappings, "index") else sys.maxsize)
                 if cursor_string:

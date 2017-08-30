@@ -1111,7 +1111,7 @@ class swagger:
         "appendsToEnd",
         "supportsRoles",
         "membershipIsMutable",
-        "metadataIsMutable",
+        "propertiesAreMutable",
         "restrictedToType",
         "maxLength"
       ],
@@ -1136,9 +1136,9 @@ class swagger:
           "description": "Indicates whether collection membership mutable (i.e. whether members can be added and removed)",
           "default": true
         }},
-        "metadataIsMutable": {{
+        "propertiesAreMutable": {{
           "type": "boolean",
-          "description": "Indicates whether collection metadata is mutable (i.e. can the metadata of this collection be changed)",
+          "description": "Indicates whether collection properties are mutable (i.e. can the metadata of this collection be changed)",
           "default": true
         }},
         "restrictedToType": {{

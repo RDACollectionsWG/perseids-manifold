@@ -2,7 +2,7 @@ import random, string
 
 import requests
 from rdflib import Dataset
-from rdflib.term import Variable
+from rdflib.term import Variable, URIRef, Literal
 from rdflib.plugins.sparql.results.jsonresults import JSONResult
 
 from src.collections.models import *
@@ -14,8 +14,18 @@ from src.utils.base.errors import NotFoundError, DBError, ForbiddenError, ParseE
 from src.utils.ids.marmotta import Marmotta
 from src.utils.ids.url_encoder import encoder
 from src.utils.rdf.ldp import LDP
-from src.utils.rdf.sparql import SPARQLTools
+from src.utils.rdf.sparql import SPARQLTools, Bind, Filter
 from .db import DBInterface
+
+def access(dct, keys):
+    if not isinstance(keys, list):
+        keys = [keys]
+    if (not isinstance(dct, dict)) or len(keys) == 0:
+        return None
+    if len(keys) == 1:
+        return dct.get(keys.pop())
+    else:
+        return access(dct.get(keys.pop(0)).get('map'), keys)
 
 class LDPDataBase(DBInterface):
     """
@@ -43,7 +53,7 @@ class LDPDataBase(DBInterface):
         result = self.sparql.find(ids,self.RDA.ns.Collection)
         return float(result.bindings.pop().get(Variable('size')))/len(c_id)
 
-    def get_collection(self, c_id=None):
+    def get_collection(self, c_id=None, filter=[]):
         # todo: ASK and check if collection exists
         if c_id is not None:
             result = self.sparql.select(self.marmotta.ldp(encoder.encode(c_id)))
@@ -52,7 +62,14 @@ class LDPDataBase(DBInterface):
             if len(contents) is 0:
                 raise NotFoundError()
         else:
-            result = self.sparql.list(s=self.marmotta.ldp(),p=LDP.ns.contains)
+            binds = [Bind(Variable('s'), self.marmotta.ldp()), Bind(Variable('p'), LDP.ns.contains)]
+            filters = [
+                Filter(s=Variable('o'),p=URIRef(v.get('label')) if k.type is RDA.Collection else LDP.contains/LDP.contains/URIRef(v.get('label')),
+                       o=v.get('rdf', Literal)(k.value)) for v,k in [
+                    (access(self.RDA.dictionary.get(f.type).inverted, f.path), f) for f in filter
+                    ]
+                ]
+            result = self.sparql.list(binds, filters)
             collections = [dct[Variable('o')] for dct in result.bindings]
             contents = []
             if len(collections):
@@ -93,7 +110,7 @@ class LDPDataBase(DBInterface):
 
     def upd_collection(self, c_obj):
         obj = self.get_collection(c_obj.id)
-        if obj and obj.pop().capabilities.metadataIsMutable:
+        if obj and obj.pop().capabilities.propertiesAreMutable: # todo: fix, possibly remove
             self.del_collection(c_obj.id)
             self.set_collection(c_obj)
             return c_obj
@@ -102,7 +119,7 @@ class LDPDataBase(DBInterface):
 
 
 
-    def get_member(self, c_id, m_id=None):
+    def get_member(self, c_id, m_id=None, filter=[]):
         # todo: ASK and check if member exists
         if m_id is not None:
             if not isinstance(m_id, list):
@@ -114,7 +131,7 @@ class LDPDataBase(DBInterface):
             id = self.marmotta.ldp(encoder.encode(c_id))
             if not self.sparql.ask(id, self.RDA.ns.Collection).askAnswer:
                 raise NotFoundError
-            lst = self.sparql.list(s=self.marmotta.ldp(encoder.encode(c_id)+"/member"), p=LDP.ns.contains)
+            lst = self.sparql.list([Bind(Variable('s'), self.marmotta.ldp(encoder.encode(c_id)+"/member")), Bind(Variable('p'), LDP.ns.contains)])
             members = [dct[Variable('o')] for dct in lst.bindings]
         contents=[]
         if len(members):

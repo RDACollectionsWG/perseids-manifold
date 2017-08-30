@@ -5,7 +5,7 @@
     "appendsToEnd": false,
     "supportsRoles": false,
     "membershipIsMutable": true,
-    "metadataIsMutable": true,
+    "propertiesAreMutable": true,
     "restrictedToType": "",
     "maxLength": 5
   },
