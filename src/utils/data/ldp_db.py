@@ -110,7 +110,7 @@ class LDPDataBase(DBInterface):
 
     def upd_collection(self, c_obj):
         obj = self.get_collection(c_obj.id)
-        if obj and obj.pop().capabilities.metadataIsMutable:
+        if obj and obj.pop().capabilities.propertiesAreMutable: # todo: fix, possibly remove
             self.del_collection(c_obj.id)
             self.set_collection(c_obj)
             return c_obj

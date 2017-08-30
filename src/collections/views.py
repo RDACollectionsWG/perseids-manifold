@@ -88,7 +88,8 @@ class CollectionsView(MethodView):
             c_obj = json.loads(request.data)
             if c_obj.id != id:
                 raise ParseError()
-            app.db.get_collection(id)
+            d_obj = app.db.get_collection(id)
+            # todo: implement propertiesAreMutable check
             return jsonify(app.db.set_collection(c_obj)), 200
         except (NotFoundError, DBError, UnauthorizedError):
             raise

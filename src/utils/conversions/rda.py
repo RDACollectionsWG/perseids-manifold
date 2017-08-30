@@ -47,7 +47,7 @@ RDATools.add(entry(CollectionObject, RDA.Collection, {
         str(RDA.appendsToEnd): {'label': 'appendsToEnd', 'type': boolean, 'rdf': Literal, 'map': {}},
         str(RDA.maxLength): {'label': 'maxLength', 'type': int, 'rdf': Literal, 'map': {}},
         str(RDA.membershipIsMutable): {'label': 'membershipIsMutable', 'type': boolean, 'rdf': Literal, 'map': {}},
-        str(RDA.metadataIsMutable): {'label': 'metadataIsMutable', 'type': boolean, 'rdf': Literal, 'map': {}},
+        str(RDA.propertiesAreMutable): {'label': 'propertiesAreMutable', 'type': boolean, 'rdf': Literal, 'map': {}},
         str(RDA.restrictedToType): {'label': 'restrictedToType', 'type': str, 'rdf': Literal, 'map': {}},
         str(RDA.supportsRoles): {'label': 'supportsRoles', 'type': boolean, 'rdf': Literal, 'map': {}},
     }},  # todo: fix URIs
@@ -57,7 +57,8 @@ RDATools.add(entry(CollectionObject, RDA.Collection, {
         str(RDA.memberOf): {'label': 'memberOf', 'type': str, 'rdf': URIRef, 'map': {}},
         str(DCTERMS.license): {'label': 'license', 'type': str, 'rdf': Literal, 'map': {}},
         str(DCTERMS.rightsHolder): {'label': 'ownership', 'type': str, 'rdf': Literal, 'map': {}},
-        str(RDA.hasAccessRestrictions): {'label': 'hasAccessRestrictions', 'type': boolean, 'rdf': Literal, 'map': {}}
+        str(RDA.hasAccessRestrictions): {'label': 'hasAccessRestrictions', 'type': boolean, 'rdf': Literal, 'map': {}},
+        str(RDA.dateCreated): {'label': 'dateCreated', 'type': str, 'rdf': Literal, 'map': {}},
     }}
 }))
 RDATools.add(entry(MemberItem, RDA.Member, {
