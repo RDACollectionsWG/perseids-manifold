@@ -101,3 +101,8 @@ The SPARQLTools class provides a Python interface to SPARQL calls with rdflib-ty
 - - - - - - -
 
 Manifold utilizes objects that implement `ACLInterface` to manage access control. The interface can get the current user’s ID, and set and get permissions objects for combinations of User, Collection and Member IDs. `Permissions` objects declare read (`r`), write (`w`) and delete (`x`) permissions.
+
+### Funders
+- - - - - - - - - -
+
+The Perseids Manifold was developed under funding from the <a href="https://mellon.org/">Andrew W. Mellon Foundation</a> as part of <a href="http://sites.tufts.edu/perseids">The Perseids Project</a> at <a href="http://tufts.edu">Tufts University</a>.
